@@ -1,0 +1,35 @@
+{
+  "logo": "feat",
+  "welcomeMessage": "Welcome to our application",
+  "login": "Login",
+  "logout": "Logout",
+  "error": {
+    "network": "Network error, please try again.",
+    "unauthorized": "Unauthorized access. Please log in."
+  },
+  "profile": {
+    "title": "Profile",
+    "settings": "Settings"
+  },
+  "auth": {
+    "signup": "Sign Up",
+    "signin": "Sign In",
+    "continue": "Continue",
+    "askAccount": "Already have an account ?",
+    "askRegistration" : "Don't have an account ?"
+  },
+  "infoUser" : {
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "yourActivities": "Your Activities",
+      "country": "Country"
+    },
+  "label" : {
+    "selectCountry": "Select an country..."
+  }
+    
+  
+}

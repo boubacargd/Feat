@@ -1,0 +1,34 @@
+{
+  "logo": "feat",
+  "welcomeMessage": "Benvenuto nella nostra applicazione",
+  "login": "Accesso",
+  "logout": "Disconnettersi",
+  "error": {
+    "network": "Errore di rete, per favore riprova.",
+    "unauthorized": "Accesso non autorizzato. Effettua il login."
+  },
+  "profile": {
+    "title": "Profilo",
+    "settings": "Impostazioni"
+  },
+  "auth": {
+    "signup": "Registrarsi",
+    "signin": "Accedere",
+    "continue": "Continua",
+    "askAccount": "Hai già un account ?",
+    "askRegistration" : "Non hai un account ?"
+  },
+  "infoUser" : {
+    "firstName": "Nome",
+    "lastName": "Cognome",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Conferma Password",
+    "yourActivities": "Le tue Attività",
+    "country": "Paese"
+  },
+  "label" : {
+    "selectCountry": "Seleziona un paese..."
+  }
+  
+}
