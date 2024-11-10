@@ -125,7 +125,8 @@ const useStyles = () => {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            marginTop:10
+            marginTop:10,
+            marginBottom:25,
         },
         /* ------------ */
         /* Picker Country style */

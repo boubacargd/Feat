@@ -45,21 +45,19 @@ export default function login() {
                             <Text style={styles.authBtnText}>{i18n.t("auth.signin")}</Text>
                         </Link>
                     </TouchableOpacity>
+
+                    <View style={styles.askAccountText} >
+                        <Text style={[styles.textH3, themeTextStyle]}>{i18n.t("auth.askRegistration")} </Text>
+
+                        <Link href="/register">
+                            <Text style={[styles.textH3Bold, themeTextStyle]}>{i18n.t("auth.signup")}</Text>
+                        </Link>
+
+                    </View>
                 </View>
 
             </View>
 
-            <View style={styles.authAsk}>
-
-                <View style={styles.askAccountText} >
-                    <Text style={[styles.textH3, themeTextStyle]}>{i18n.t("auth.askRegistration")} {" "}</Text>
-
-                    <Link href="/register">
-                        <Text style={[styles.textH3Bold, themeTextStyle]}>{i18n.t("auth.signup")}</Text>
-                    </Link>
-
-                </View>
-            </View>
         </SafeAreaView>
     )
 }
