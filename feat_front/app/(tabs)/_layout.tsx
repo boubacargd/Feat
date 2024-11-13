@@ -1,5 +1,4 @@
 import { Tabs } from 'expo-router';
-import CustomHeader from '../../components/Header';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 

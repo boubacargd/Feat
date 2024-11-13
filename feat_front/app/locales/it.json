@@ -25,7 +25,8 @@
     "password": "Password",
     "confirmPassword": "Conferma Password",
     "yourActivities": "Le tue Attività",
-    "country": "Paese"
+    "country": "Paese",
+    "addimage" : "Aggiungi la tua immagine del profilo"
   },
   "label" : {
     "selectCountry": "Seleziona un paese..."

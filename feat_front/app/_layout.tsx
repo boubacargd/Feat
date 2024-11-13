@@ -25,6 +25,13 @@ export default function RootLayout() {
                     headerTitle: "Inscription", 
                 }}
             />
+               <Stack.Screen
+                name="(auth)/(register)/addImageProfile"
+                options={{
+                    headerShown: false, 
+                    headerTitle: "Add Image Profile", 
+                }}
+            />
             <Stack.Screen
                 name="(auth)/login"
                 options={{

@@ -29,6 +29,10 @@ const useStyles = () => {
         text: {
             fontSize: 18,
         },
+        textH1Bold:{
+            fontSize: 20,
+            fontWeight: "bold"
+        },
         textH3: {
             fontSize: 15,
         },
@@ -42,6 +46,28 @@ const useStyles = () => {
         },
         textH4: {
             fontSize: 12,
+        },
+        button:{
+            padding: 12,
+            width: "95%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            marginBottom: 10,
+            borderRadius: 8,
+            borderWidth:1,
+            borderColor:themeBorderColor,
+        },
+        buttonAddimg:{
+            padding: 12,
+            width: "95%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            marginBottom: 10,
+            borderRadius: 8,
+            backgroundColor: "#4eb8ff",
+
         },
         /* Auth styles */
      

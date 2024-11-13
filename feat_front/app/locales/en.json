@@ -25,7 +25,8 @@
       "password": "Password",
       "confirmPassword": "Confirm Password",
       "yourActivities": "Your Activities",
-      "country": "Country"
+      "country": "Country",
+      "addimage" : "Add your profile picture"
     },
   "label" : {
     "selectCountry": "Select an country..."
