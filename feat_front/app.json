@@ -4,18 +4,27 @@
     "slug": "feat_front",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "com.boubacargd.feat",
     "userInterfaceStyle": "automatic",
+    "icon": "./assets/images/app-icon.png",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "extra": {
+      "googleOAuth": {
+        "clientId": "594973443734-2ra4kj49bvu54no1outgv9fe64n3eq7v.apps.googleusercontent.com",
+        "iosClientId": "594973443734-sjc76c8r96vodbtv8igamt9jbjr66g87.apps.googleusercontent.com",
+        "androidClientId": "594973443734-5lh7t7mukvsnv6vfhr4vcikqd6kchlr6.apps.googleusercontent.com"
+      }
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.boubacargd.feat" 
     },
     "android": {
+      "package": "com.boubacargd.feat",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -28,7 +37,8 @@
     },
     "plugins": [
       "expo-router",
-      "expo-localization"
+      "expo-localization",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true

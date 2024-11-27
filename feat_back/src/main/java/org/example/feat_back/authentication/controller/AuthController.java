@@ -3,8 +3,11 @@ package org.example.feat_back.authentication.controller;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import org.example.feat_back.authentication.service.UserService;
+import org.example.feat_back.authentication.user.GoogleUserInfo;
 import org.example.feat_back.authentication.user.UserDTO;
+import org.example.feat_back.authentication.user.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -13,10 +16,12 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
+import java.util.Map;
 
 @RestController
 @CrossOrigin("http://localhost:8081/")
@@ -39,6 +44,8 @@ public class AuthController {
 
     @PostMapping("/signin")
     public ResponseEntity<String> signin(@RequestBody UserCredential userCredential) {
+
+
         // Valider les entrées
         if (userCredential.email() == null || userCredential.password() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email and password must not be null.");
@@ -87,4 +94,50 @@ public class AuthController {
     }
 
     public record UserCredential(String email, String password) {}
+
+    @PostMapping("/google")
+    public ResponseEntity<Map<String, Object>> verifyGoogleToken(@RequestBody Map<String, String> body) {
+        String token = body.get("token");
+
+        // URL pour valider le token Google
+        String url = "https://oauth2.googleapis.com/tokeninfo?id_token=" + token;
+
+        // Envoyer la requête à Google
+        RestTemplate restTemplate = new RestTemplate();
+        Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+
+        if (response == null || response.get("email") == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Invalid Google token"));
+        }
+
+        // Extraire les informations utilisateur
+        GoogleUserInfo userInfo = new GoogleUserInfo();
+        userInfo.setEmail((String) response.get("email"));
+        userInfo.setUserId((String) response.get("sub"));
+        userInfo.setName((String) response.get("name"));
+        userInfo.setPicture((String) response.get("picture"));
+
+        // Vérifier l'existence de l'utilisateur dans la base de données
+        UserEntity userEntity = userService.createUserFromGoogleToken(userInfo);
+
+        // Convertir UserEntity en UserDTO
+        UserDTO userDTO = new UserDTO(userEntity);
+
+        // Créer un JWT pour l'utilisateur authentifié
+        String jwtToken = Jwts.builder()
+                .setSubject(userInfo.getEmail())
+                .claim("email", userInfo.getEmail())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 864000000)) // Expiration dans 10 jours
+                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .compact();
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add("Authorization", "Bearer " + jwtToken);
+
+        // Renvoyer le JWT et les informations de l'utilisateur
+        return ResponseEntity.ok().headers(responseHeaders).body(Map.of("jwt", jwtToken, "user", userDTO));
+    }
+
 }

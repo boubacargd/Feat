@@ -16,7 +16,11 @@
     "signin": "Se connecter",
     "continue": "Continuer",
     "askAccount": "Vous avez déjà un compte ?",
-    "askRegistration" : "Vous n'avez pas de compte ?"
+    "askRegistration" : "Vous n'avez pas de compte ?",
+    "passwordForget": "Mot de passe oublié ?",
+    "or": "Ou",
+    "signinGoogle" : "Se connecter avec Google"
+
   },
   "infoUser" : {
     "firstName": "Prénom",
@@ -26,10 +30,17 @@
     "confirmPassword": "Confirmer le mot de passe",
     "yourActivities": "Vos Activités",
     "country": "Pays",
-    "addimage" : "Ajoutez votre photo de profil"
+    "addImg" : "Ajoutez votre photo de profil",
+    "chooceImg" : "Choisir l'image", 
+    "editImg":"Modifier l'image",
+    "confirmImg" : "Confirmer l'image",
+    "skip" : "Passer"
   },
   "label" : {
     "selectCountry": "Sélectionnez un pays..."
+  },
+  "post" : { 
+    "description" : "Description"
   }
   
 }

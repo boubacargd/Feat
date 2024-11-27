@@ -3,7 +3,6 @@ package org.example.feat_back.authentication.user;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.io.Serializable;
 import java.util.Collection;
 
 public class UserDTO implements UserDetails {
@@ -12,10 +11,15 @@ public class UserDTO implements UserDetails {
     private String firstName;
     private String lastName;
     private String email;
-    private String password; // L'attribut password doit être ici
-    private String activities; // Type modifié en String
+    private String password;
+    private String activities;
     private String country;
     private String imageUrl;
+
+    // Google Info
+    private String name;
+    private String profileImage;
+    private String googleId;
     private Collection<? extends GrantedAuthority> authorities;
 
     private boolean accountNonExpired = true;
@@ -23,17 +27,29 @@ public class UserDTO implements UserDetails {
     private boolean credentialsNonExpired = true;
     private boolean enabled = true;
 
-    // Constructeur par défaut
-    public UserDTO() {}
-
-    // Constructeur avec tous les paramètres
-    public UserDTO(Long id, String firstName, String lastName, String email, String password, String activities, String country, String imageUrl) {
+    // Constructeur avec tous les paramètres nécessaires
+    public UserDTO(Long id, String firstName, String lastName, String email,
+                   String activities, String country, String imageUrl, String name) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.password = password; // Doit correspondre à l'attribut
-        this.activities = activities; // Modifié pour accepter un String
+        this.activities = activities;
+        this.country = country;
+        this.imageUrl = imageUrl;
+        this.name = name;
+    }
+
+
+
+    // Constructeur sans mot de passe pour des raisons de sécurité
+    public UserDTO(Long id, String firstName, String lastName, String email,
+                   String activities, String country, String imageUrl) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.activities = activities;
         this.country = country;
         this.imageUrl = imageUrl;
     }
@@ -44,11 +60,15 @@ public class UserDTO implements UserDetails {
         this.firstName = userEntity.getFirstName();
         this.lastName = userEntity.getLastName();
         this.email = userEntity.getEmail();
-        this.password = userEntity.getPassword(); // A manipuler avec précaution
-        this.activities = userEntity.getActivities(); // Modifié pour correspondre à un String
+        this.password = userEntity.getPassword();
+        this.activities = userEntity.getActivities();
         this.country = userEntity.getCountry();
         this.imageUrl = userEntity.getImageUrl();
         this.authorities = userEntity.getAuthorities();
+        // Si vous souhaitez inclure les informations Google, vous pouvez les ajouter
+        this.name = userEntity.getName();
+        this.profileImage = userEntity.getProfileImage();
+        this.googleId = userEntity.getGoogleId();
     }
 
     // Getters et Setters
@@ -87,7 +107,7 @@ public class UserDTO implements UserDetails {
 
     @Override
     public String getPassword() {
-        return password; // Assurez-vous que cela retourne l'attribut password correctement
+        return password;
     }
 
     public void setPassword(String password) {
@@ -95,11 +115,11 @@ public class UserDTO implements UserDetails {
     }
 
     public String getActivities() {
-        return activities; // Récupérer activities comme un String
+        return activities;
     }
 
     public void setActivities(String activities) {
-        this.activities = activities; // Setter modifié pour String
+        this.activities = activities;
     }
 
     public String getCountry() {
@@ -131,7 +151,7 @@ public class UserDTO implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email; // Retourne l'email comme nom d'utilisateur
+        return email;
     }
 
     @Override
@@ -168,5 +188,30 @@ public class UserDTO implements UserDetails {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    // Getters et Setters pour Google
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getProfileImage() {
+        return profileImage;
+    }
+
+    public void setProfileImage(String profileImage) {
+        this.profileImage = profileImage;
+    }
+
+    public String getGoogleId() {
+        return googleId;
+    }
+
+    public void setGoogleId(String googleId) {
+        this.googleId = googleId;
     }
 }

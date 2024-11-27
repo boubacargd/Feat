@@ -6,6 +6,7 @@ export const useTheme = () => {
 
     const themeTextStyle = colorScheme === 'light' ? styles.lightThemeText : styles.darkThemeText;
     const themeContainerStyle = colorScheme === 'light' ? styles.lightContainer : styles.darkContainer;
+    const themeScreenStyle = colorScheme === 'light' ? "white" : "#010101";
     const themeBorderColor = colorScheme === 'light' ? '#000000' : '#b3b3b3';
     const themeBackgroundColorBtn = colorScheme === 'light' ? styles.lightBgColorBtn : styles.darkBgColorBtn ;
     const themeButtonTextColor = colorScheme === 'light' ? styles.lightButtonTextColor : styles.darkButtonTextColor;
@@ -13,6 +14,7 @@ export const useTheme = () => {
     return {
         colorScheme,
         themeTextStyle,
+        themeScreenStyle,
         themeContainerStyle,
         themeBorderColor,
         themeBackgroundColorBtn,
@@ -25,7 +27,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#f4f2ee',
     },
     darkContainer: {
-        backgroundColor: '#0d0d0d',
+        backgroundColor: 'black',
     },
     lightThemeText: {
         color: '#242c40',

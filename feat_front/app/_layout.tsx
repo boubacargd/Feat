@@ -1,6 +1,5 @@
 import React from 'react';
 import { Stack } from 'expo-router';
-import CustomHeader from '../components/Header';
 
 export default function RootLayout() {
     return (
@@ -11,40 +10,47 @@ export default function RootLayout() {
                 },
             }}
         >
-            <Stack.Screen 
-                name="index" 
+            <Stack.Screen
+                name="index"
                 options={{
-                    headerTitle: "Accueil", 
-                }} 
+                    headerTitle: "Accueil",
+                }}
             />
 
             <Stack.Screen
                 name="(auth)/(register)/register"
                 options={{
-                    headerShown: false, 
-                    headerTitle: "Inscription", 
+                    headerShown: false,
+                    headerTitle: "Inscription",
                 }}
             />
-               <Stack.Screen
+            <Stack.Screen
                 name="(auth)/(register)/addImageProfile"
                 options={{
-                    headerShown: false, 
-                    headerTitle: "Add Image Profile", 
+                    headerShown: false,
+                    headerTitle: "Add Image Profile",
                 }}
             />
             <Stack.Screen
                 name="(auth)/login"
                 options={{
-                    headerShown: false, 
-                    headerTitle: "Login", 
+                    headerShown: false,
+                    headerTitle: "Login",
                 }}
             />
-
-            <Stack.Screen 
-                name="(tabs)" 
-                options={{ 
-                    headerShown: false 
-                }} 
+            <Stack.Screen
+                name="profile"
+                options={{
+                    headerShown: false,
+                    headerTitle: "Profile",
+                }}
+            />
+      
+            <Stack.Screen
+                name="(tabs)"
+                options={{
+                    headerShown: false
+                }}
             />
         </Stack>
     );

@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.Ordered;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -32,6 +33,7 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 public class ConfigAuth {
+
     private static final String SECRET = "veyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
 
     // Générer la clé pour JWT
@@ -76,8 +78,8 @@ public class ConfigAuth {
                         .anyRequest().authenticated()  // Toute autre route nécessite une authentification
                 )
                 .logout(logout -> logout.logoutSuccessUrl("/api/public/**"))
-                .csrf(AbstractHttpConfigurer::disable)  // Désactiver CSRF
-                .httpBasic(AbstractHttpConfigurer::disable)  // Désactiver HTTP Basic
+                .csrf(csrf -> csrf.disable())  // Désactiver CSRF (compliant avec Spring Security 6)
+                .httpBasic(httpBasic -> httpBasic.disable())  // Désactiver HTTP Basic
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  // Pas de session, API stateless
                 .build();
     }

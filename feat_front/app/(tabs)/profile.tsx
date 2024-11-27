@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, View, Dimensions, ActivityIndicator, Text } from 'react-native';
+import { SafeAreaView, View, Dimensions, ActivityIndicator, Text, ScrollView } from 'react-native';
 import useStyles from '../../styles/styleSheet';
 import Animated, { interpolate, useAnimatedRef, useAnimatedStyle, useSharedValue, useAnimatedScrollHandler } from 'react-native-reanimated';
 import { useTheme } from '../../hooks/useTheme';
@@ -9,6 +9,13 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native'; // Pour utiliser la navigation
+import UserInfo from '../../components/profile/UserInfo';
+import { UserStats } from '@/components/profile/UserStats';
+import { UserSettings } from '@/components/profile/UserSettings';
+import { UserEditButton } from '@/components/profile/UserEditButton';
+import { UserPostButton } from '@/components/profile/UserPostButton';
+import { UserPosts } from '@/components/profile/post/UserPosts';
+import { ProjectsCollabsBtn } from '@/components/ProjectsCollabsBtn';
 
 const { width } = Dimensions.get("window");
 const userImageHeight = 300;
@@ -25,7 +32,6 @@ export default function Profile() {
     const [loading, setLoading] = useState(true);
     const [navigating, setNavigating] = useState(false);
 
-    const navigation = useNavigation(); // Utilisation du hook de navigation
 
     const scrollHandler = useAnimatedScrollHandler((event) => {
         scrollOffset.value = event.contentOffset.y;
@@ -54,11 +60,11 @@ export default function Profile() {
         checkToken();
     }, []);
 
-/*     useEffect(() => {
-        if (navigating) {
-            navigation.navigate('/home');
-        }
-    }, [navigating, navigation]); */
+    /*     useEffect(() => {
+            if (navigating) {
+                navigation.navigate('/home');
+            }
+        }, [navigating, navigation]); */
 
     const fetchUserInfo = async (token: string) => {
         setLoading(true);
@@ -75,14 +81,15 @@ export default function Profile() {
             });
 
             const imageUrl = response.data.imageUrl
-                ? `http://localhost:8080/uploads/${response.data.imageUrl}`
-                : "https://as2.ftcdn.net/v2/jpg/06/85/17/31/1000_F_685173149_MsBL8hirpNeAglmgEKBXXPNk5dk6SA45.jpg";
+                ? response.data.imageUrl
+                : "http://localhost:8080/uploads/1731499742849_photo.jpg";
 
+            const { name, country } = response.data;
             setUserInfo({
-                name: `${response.data.firstName} ${response.data.lastName}`,
-                country: response.data.country || "",
-                activities: response.data.activities, 
-                imageUrl: imageUrl
+                name: name,
+                country: country,
+                activities: response.data.activities,
+                imageUrl: imageUrl || "loading"
             });
         } catch (error) {
             console.error('Fetch user info error:', error);
@@ -90,25 +97,6 @@ export default function Profile() {
             setLoading(false);
         }
     };
-
-    const imageAnimatedStyle = useAnimatedStyle(() => {
-        const height = interpolate(
-            scrollOffset.value,
-            [0, userImageHeight],
-            [userImageHeight, 1]
-        );
-
-        const opacity = interpolate(
-            scrollOffset.value,
-            [0, userImageHeight],
-            [1, 0]
-        );
-
-        return {
-            height,
-            opacity,
-        };
-    });
 
     const handleLogout = async () => {
         try {
@@ -135,34 +123,28 @@ export default function Profile() {
     }
 
     if (userInfo) {
-        const { name, country, activities, imageUrl } = userInfo;
 
         return (
-            <SafeAreaView style={[styles.container, themeContainerStyle]}>
-                <Animated.ScrollView
-                    ref={scrollRef}
-                    scrollEventThrottle={0}
-                    onScroll={scrollHandler}
-                    style={{ flex: 1, zIndex: 1}}
-                >
-                    <Animated.Image
-                        source={{ uri: imageUrl }}
-                        style={[{
-                            width,
-                            height: userImageHeight,
-                        }, imageAnimatedStyle]}
-                        onError={(error) => {
-                            console.error('Error loading image:', error.nativeEvent.error);
-                        }}
-                    />
-                    <View style={{ padding: 20 }}>
-                        <Text style={[styles.textH3Bold, themeTextStyle]}>{name || ''}</Text>
-                        <Text style={[styles.textH3, themeTextStyle]}>{country || ''}</Text>
-                        <Text style={[styles.textH3, themeTextStyle]}>{activities || ''}</Text>
-                    </View>
-                </Animated.ScrollView>
+            <SafeAreaView style={styles.container}>
 
-                <Text style={{ padding: 20, backgroundColor:"red" }} onPress={handleLogout}>logout</Text>
+                <ScrollView>
+
+                    <UserInfo
+                        name={userInfo.name}
+                        country={userInfo.country}
+                        activities={userInfo.activities}
+                        imageUrl={userInfo.imageUrl}
+                        themeTextStyle={themeTextStyle}
+                    />
+                        
+                    <UserStats />
+                    <ProjectsCollabsBtn/>
+                    <UserPosts />
+
+                    <Text style={{ padding: 10, marginTop: 50, backgroundColor: "red" }} onPress={handleLogout}>logout</Text>
+                </ScrollView>
+                <UserPostButton />
+
             </SafeAreaView>
         );
     }

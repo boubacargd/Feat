@@ -6,9 +6,9 @@ import { useTheme } from '../../../hooks/useTheme';
 import Octicons from '@expo/vector-icons/Octicons';
 import LogoFeat from '@/components/logo';
 import RNPickerSelect from 'react-native-picker-select';
-import axios , { AxiosError } from "axios"
+import axios, { AxiosError } from "axios"
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import DropDownPicker from 'react-native-dropdown-picker';
 import { Link, useRouter } from 'expo-router';
 
 export default function register() {
@@ -27,6 +27,7 @@ export default function register() {
     const [items, setItems] = useState<Array<{ label: string, value: string }>>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
+    const [open, setOpen] = useState(false);
 
 
 
@@ -35,7 +36,7 @@ export default function register() {
             Alert.alert("Error", "Passwords do not match.");
             return;
         }
-    
+
         const userData = {
             firstName,
             lastName,
@@ -44,51 +45,53 @@ export default function register() {
             activities,
             country
         };
-    
+
         try {
             const response = await axios.post('http://localhost:8080/api/public/signup', userData);
             console.log("User Data:", userData);
             console.log('User signed up successfully:', response.data);
             Alert.alert("Success", "User registered successfully!");
-    
+
             const token = response.data.jwtToken; // Récupérer le token JWT depuis la réponse
-    
+
             if (token) {
                 await AsyncStorage.setItem('jwt_token', token); // Stocker le token dans AsyncStorage
                 console.log("Token stored successfully");
-    
+
                 // Naviguer vers AddImgProfil ou une autre page après l'inscription
                 router.push({ pathname: '/(auth)/(register)/addImageProfile', params: { email } });
             } else {
                 console.error("No token found in response");
                 Alert.alert("Error", "No token found. Please try again.");
             }
-    
+
         } catch (error) {
             const axiosError = error as AxiosError;
             if (axiosError.response) {
                 console.log('Error status:', axiosError.response.status);
                 console.log('Error data:', axiosError.response.data);
-                console.log('Error headers:', axiosError.response.headers);
+                Alert.alert("Error", `Failed to sign up: ${axiosError.response.data}`);
             } else {
                 console.error('Error without response:', axiosError.message);
+                Alert.alert("Error", "Failed to sign up. Please try again.");
             }
-            Alert.alert("Error", "Failed to sign up. Please try again.");
         }
+
     };
-    
-    
+
+
 
     useEffect(() => {
         axios.get('https://restcountries.com/v3.1/all')
             .then(response => {
                 const sortedCountries = response.data
                     .map((country: any) => ({
-                        label: `${country.name.common} (${country.cca2})`,
-                        value: country.cca2,
-                        flag: country.flags.svg || country.flags.png, // URL du drapeau
+                        label: country.name.common, // Utilise le nom complet du pays
+                        value: country.name.common, // Enregistre également le nom complet
+                        flag: country.flags?.svg || country.flags?.png, // URL du drapeau
                     }))
-    
+                    .sort((a: any, b: any) => a.label.localeCompare(b.label)); // Tri par ordre alphabétique
+
                 setItems(sortedCountries);
                 setLoading(false);
             })
@@ -97,7 +100,7 @@ export default function register() {
                 setLoading(false);
             });
     }, []);
-    
+
 
     const handleNextStep = () => {
         setStep(step + 1);
@@ -126,7 +129,7 @@ export default function register() {
                                 onChangeText={setFirstName}
                                 style={styles.authInput}
                             />
-                            <View style={{ display: "flex", justifyContent: "flex-end", alignItems: "flex-end", marginTop:10 }}>
+                            <View style={{ display: "flex", justifyContent: "flex-end", alignItems: "flex-end", marginTop: 10 }}>
                                 <TouchableOpacity style={[styles.continueBtn, { backgroundColor: themeBackgroundColorBtn.backgroundColor }]} onPress={handleNextStep} >
                                     <Text style={[styles.textH3Bold, themeButtonTextColor]}>{i18n.t("auth.continue")}</Text>
                                 </TouchableOpacity>
@@ -240,23 +243,21 @@ export default function register() {
 
                             {
                                 loading ? (
-                                    <View style={{display:"flex", flexDirection:"row", justifyContent:"center", alignItems:"center"}}>
-                                        <Text> Loading countries...</Text>
+                                    <View style={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+                                        <Text>Loading countries...</Text>
                                         <ActivityIndicator size="small" color="black" />
                                     </View>
                                 ) : (
-                                    <RNPickerSelect
-                                        onValueChange={(value) => setCountry(value)}
-                                        items={items}
+                                    <DropDownPicker
+                                        open={open}
+                                        setOpen={setOpen}
                                         value={country}
-                                        style={{
-                                            inputIOS: styles.picker,
-                                            inputAndroid: styles.picker,
-                                            placeholder: {
-                                                ...styles.textH3Placeholder, 
-                                            },
-                                        }}
-                                        placeholder={{ label: i18n.t('label.selectCountry'), value: null }}                                    />
+                                        setValue={setCountry}
+                                        items={items}
+                                        style={styles.authInput}
+
+                                        placeholder="Select your country"
+                                    />
                                 )
                             }
 
@@ -266,7 +267,7 @@ export default function register() {
                                 </TouchableOpacity>
 
                                 <TouchableOpacity style={styles.authBtn} onPress={handleSignUp}>
-                                        <Text style={styles.authBtnText}>{i18n.t("auth.signup")}</Text>
+                                    <Text style={[styles.authBtnText, themeButtonTextColor]}>{i18n.t("auth.signup")}</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -276,7 +277,7 @@ export default function register() {
 
                 <View style={styles.authAsk}>
 
-                    
+
                     <View style={styles.askAccountText} >
                         <Text style={[styles.textH3, themeTextStyle]}>{i18n.t("auth.askAccount")} {" "}</Text>
 

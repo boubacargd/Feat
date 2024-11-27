@@ -16,6 +16,9 @@ web-build/
 *.key
 *.mobileprovision
 
+# Andoid config
+keystore.txt
+
 # Metro
 .metro-health-check*
 

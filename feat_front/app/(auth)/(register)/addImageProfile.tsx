@@ -50,19 +50,19 @@ export default function AddImageProfile() {
 
     const uploadImage = async (selectedImage: SelectedImage) => {
         const token = await AsyncStorage.getItem('jwt_token');
-
+    
         if (!selectedImage.uri) {
             Alert.alert("Erreur", "L'image sélectionnée n'est pas valide.");
             return;
         }
-
+    
         const formData = new FormData();
         formData.append('file', {
             uri: selectedImage.uri,
             name: selectedImage.fileName || 'photo.jpg',
             type: selectedImage.type || 'image/jpeg',
         } as any);
-
+    
         try {
             const response = await fetch('http://localhost:8080/api/images/upload', {
                 method: 'POST',
@@ -71,16 +71,22 @@ export default function AddImageProfile() {
                     'Authorization': `Bearer ${token}`
                 },
             });
-
+    
             if (!response.ok) {
                 const errorData = await response.text();
                 console.error('Error response:', errorData);
                 throw new Error('Network response was not ok');
             }
-
+    
             const data = await response.json();
             console.log('Image uploaded:', data);
-            await updateProfileImage(email, data.imageUrl);
+    
+            // Compléter l'URL si nécessaire
+            const fullImageUrl = data.imageUrl.startsWith('http') 
+                ? data.imageUrl 
+                : `http://localhost:8080/${data.imageUrl}`;
+    
+            await updateProfileImage(email, fullImageUrl);
             router.push('/home');
         } catch (error) {
             const err = error as Error;
@@ -88,7 +94,7 @@ export default function AddImageProfile() {
             Alert.alert("Erreur lors de l'upload de l'image.", err.message);
         }
     };
-
+    
     const updateProfileImage = async (email: string, imageUrl: string) => {
         const token = await AsyncStorage.getItem('jwt_token');
 
@@ -136,7 +142,7 @@ export default function AddImageProfile() {
                     {!image && (
                         <>
                             <Ionicons name="image" size={80} style={[{}, themeTextStyle]} />
-                            <Text style={[styles.textH1Bold, themeTextStyle]}>{i18n.t("infoUser.addimage")}</Text>
+                            <Text style={[styles.textH1Bold, themeTextStyle]}>{i18n.t("infoUser.addImg")}</Text>
                         </>
                     )}
                     {image && <Image source={{ uri: image.uri }} style={{ width, height: 300,  marginVertical: 20 }} />}
@@ -148,7 +154,7 @@ export default function AddImageProfile() {
                         <TouchableOpacity
                             style={styles.buttonAddimg}
                             onPress={handleConfirm}>
-                            <Text style={[styles.textH3Bold, themeButtonTextColor]}>Confirmer l'image</Text>
+                            <Text style={[styles.textH3Bold, themeButtonTextColor]}>{i18n.t("infoUser.confirmImg")}</Text>
                         </TouchableOpacity>
                     )}
                     {/* Bouton pour choisir ou modifier l'image */}
@@ -156,7 +162,7 @@ export default function AddImageProfile() {
                         style={[styles.button, themeBackgroundColorBtn]}
                         onPress={pickImage}>
                         <Text style={[styles.textH3Bold, themeButtonTextColor]}>
-                            {image ? "Modifier l'image" : "Choisir une image"}
+                            {image ? i18n.t("infoUser.editImg") : i18n.t("infoUser.chooceImg")}
                         </Text>
                     </TouchableOpacity>
 
@@ -165,7 +171,7 @@ export default function AddImageProfile() {
 
                     {/* Bouton pour sauter */}
                     <TouchableOpacity style={[styles.button]} onPress={handleSkip}>
-                        <Text style={[styles.textH3Bold, themeTextStyle]}>Passer</Text>
+                        <Text style={[styles.textH3Bold, themeTextStyle]}>{i18n.t("infoUser.skip")}</Text>
                     </TouchableOpacity>
                 </View>
             </View>

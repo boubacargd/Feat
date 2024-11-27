@@ -17,19 +17,24 @@ public class UserEntity implements UserDetails {
     private String lastName;
     private String email;
     private String password;
-
-    private String activities;  // Changement en List<String> pour représenter plusieurs activités
+    private String activities;
     private String country;
     @Column(name = "profile_image_path")
-    private String imageUrl; // Utilisé pour stocker l'URL de l'image de profil
+    private String imageUrl;
 
-    private boolean accountNonExpired = true; // Ajout des attributs de UserDetails
+    private String name;  // Utilisé pour le nom complet (Google)
+    private String profileImage;
+    private String googleId;
+
+    @Enumerated(EnumType.STRING)  // Utilisation d'un Enum pour les types d'authentification
+    private AuthProvider authProvider;
+
+    private boolean accountNonExpired = true;
     private boolean accountNonLocked = true;
     private boolean credentialsNonExpired = true;
     private boolean enabled = true;
 
-
-    // Getters and Setters
+    // Getters et Setters
 
     public Long getId() {
         return id;
@@ -72,11 +77,11 @@ public class UserEntity implements UserDetails {
     }
 
     public String getActivities() {
-        return activities;  // Retourner une liste d'activités
+        return activities;
     }
 
     public void setActivities(String activities) {
-        this.activities = activities;  // Setter pour la liste d'activités
+        this.activities = activities;
     }
 
     public String getCountry() {
@@ -87,25 +92,56 @@ public class UserEntity implements UserDetails {
         this.country = country;
     }
 
+    public String getImageUrl() {
+        return imageUrl;
+    }
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
 
-    public String getImageUrl() {
-        return imageUrl;  // Retourner l'URL de l'image de profil
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getProfileImage() {
+        return profileImage;
+    }
+
+    public void setProfileImage(String profileImage) {
+        this.profileImage = profileImage;
+    }
+
+    public String getGoogleId() {
+        return googleId;
+    }
+
+    public void setGoogleId(String googleId) {
+        this.googleId = googleId;
+    }
+
+    public AuthProvider getAuthProvider() {
+        return authProvider;
+    }
+
+    public void setAuthProvider(AuthProvider authProvider) {
+        this.authProvider = authProvider;
     }
 
     // Implémentations de UserDetails
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(); // Vous pouvez retourner des rôles/autorités si nécessaire
+        return List.of();
     }
 
     @Override
     public String getUsername() {
-        return email; // Utilisation de l'email comme nom d'utilisateur
+        return email;
     }
 
     @Override
@@ -127,4 +163,5 @@ public class UserEntity implements UserDetails {
     public boolean isEnabled() {
         return enabled;
     }
+
 }

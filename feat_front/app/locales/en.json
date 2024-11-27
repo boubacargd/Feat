@@ -16,7 +16,10 @@
     "signin": "Sign In",
     "continue": "Continue",
     "askAccount": "Already have an account ?",
-    "askRegistration" : "Don't have an account ?"
+    "askRegistration" : "Don't have an account ?",
+    "passwordForget": "Password Forget ?",
+    "or": "Or",
+    "signinGoogle" : "Sign in with Google"
   },
   "infoUser" : {
       "firstName": "First Name",
@@ -26,10 +29,17 @@
       "confirmPassword": "Confirm Password",
       "yourActivities": "Your Activities",
       "country": "Country",
-      "addimage" : "Add your profile picture"
+      "chooceImg" : "Choose image", 
+      "addImg" : "Add your profile picture",
+      "editImg":"Edit picture",
+      "confirmImg" : "Confirm picture",
+      "skip" : "Skip"
     },
   "label" : {
     "selectCountry": "Select an country..."
+  },
+  "post" : { 
+    "description" : "Description"
   }
     
   
