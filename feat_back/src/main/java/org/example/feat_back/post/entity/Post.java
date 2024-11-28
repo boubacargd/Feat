@@ -3,21 +3,27 @@ package org.example.feat_back.post.entity;
 import jakarta.persistence.*;
 import org.example.feat_back.authentication.user.UserEntity;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 public class Post {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(columnDefinition = "TEXT")
     private String content;
-    private String imageUrl;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
-    private UserEntity user; // L'utilisateur qui a créé ce post
+    @ElementCollection
+    private List<String> imageUrls;  // Liste des URLs des images
 
-    // Getters et Setters
+
+    @ManyToOne
+    private UserEntity user;
+
+    // Getters et setters
     public Long getId() {
         return id;
     }
@@ -34,12 +40,12 @@ public class Post {
         this.content = content;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
+    public List<String> getImageUrls() {
+        return imageUrls;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public void setImageUrls(List<String> imageUrls) {
+        this.imageUrls = imageUrls;
     }
 
     public UserEntity getUser() {
@@ -49,5 +55,4 @@ public class Post {
     public void setUser(UserEntity user) {
         this.user = user;
     }
-
 }

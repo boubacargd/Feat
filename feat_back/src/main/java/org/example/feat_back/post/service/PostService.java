@@ -20,7 +20,7 @@ public class PostService {
     public PostDTO createPost(PostDTO postDTO, UserEntity user) {
         Post post = new Post();
         post.setContent(postDTO.getContent());
-        post.setImageUrl(postDTO.getImageUrl());
+        post.setImageUrls(postDTO.getImageUrl());
         post.setUser(user); // Relier le post à l'utilisateur connecté
 
         Post savedPost = postRepository.save(post);
@@ -39,7 +39,7 @@ public class PostService {
         PostDTO postDTO = new PostDTO();
         postDTO.setId(post.getId());
         postDTO.setContent(post.getContent());
-        postDTO.setImageUrl(post.getImageUrl());
+        postDTO.setImageUrl(post.getImageUrls());
         postDTO.setUserName(post.getUser().getFirstName() + " " + post.getUser().getLastName()); // Prendre le nom complet de l'utilisateur
         postDTO.setUserImageUrl(post.getUser().getImageUrl());
         return postDTO;
@@ -50,8 +50,9 @@ public class PostService {
         List<Post> userPosts = postRepository.findByUser(user);
 
         // Convertir les entités Post en DTOs
-        return userPosts.stream().map(this::convertToPostDTO).toList();
+        return userPosts.stream().map(post -> new PostDTO(post)).collect(Collectors.toList());
     }
+
 
 
     // Récupérer un post par ID
@@ -65,13 +66,17 @@ public class PostService {
 
     // Supprimer un post
     public void deletePost(Long postId, UserEntity user) {
+        // Vérifier si le post existe
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post introuvable."));
+                .orElseThrow(() -> new RuntimeException("Post non trouvé"));
 
+        // Vérifier si l'utilisateur est autorisé à supprimer ce post
         if (!post.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Vous n'avez pas l'autorisation de supprimer ce post.");
+            throw new RuntimeException("Vous n'êtes pas autorisé à supprimer ce post.");
         }
 
+        // Supprimer le post
         postRepository.delete(post);
     }
+
 }

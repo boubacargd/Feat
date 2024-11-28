@@ -61,7 +61,7 @@ export default function Login() {
             const { jwt, user } = res.data;
             await AsyncStorage.setItem('jwt_token', jwt);
             Alert.alert('Success', `Logged in as ${user.email}`);
-            router.push('/home');
+            router.push('/profile');
         } catch (error) {
             console.error('Google login error:', error);
             Alert.alert('Error', 'Google login failed.');

@@ -7,7 +7,7 @@ import { useTheme } from "@/hooks/useTheme";
 
 export function UserPostButton() {
   const styles = useStyles();
-  const { themeTextStyle, themeContainerStyle ,themeButtonTextColor } = useTheme();
+  const { themeButtonTextColor } = useTheme();
   const [isModalVisible, setIsModalVisible] = useState(false); // État pour afficher/masquer le modal
 
   const openModal = () => setIsModalVisible(true);
@@ -22,12 +22,12 @@ export function UserPostButton() {
 
       <Modal visible={isModalVisible} animationType="slide" transparent={true} onRequestClose={closeModal} >
         
-        <View style={styles.modalContainer}>
+        <View style={styles.modalContainer} >
           <View style={styles.modalContent}>
             <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
-              <MaterialIcons name="close" size={24} />
+              <MaterialIcons name="close" size={24} color={"red"} />
             </TouchableOpacity>            
-            <ModalPost/>
+            <ModalPost closeModal={closeModal} />
           </View>
         </View>
       

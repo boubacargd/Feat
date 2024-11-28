@@ -45,7 +45,7 @@ const useStyles = () => {
         },
         button: {
             padding: 12,
-            width: "95%",
+            width: "100%",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
@@ -65,6 +65,7 @@ const useStyles = () => {
             backgroundColor: themeBorderColor,
 
         },
+      
         /* Auth styles */
 
         authAsk: {
@@ -175,6 +176,15 @@ const useStyles = () => {
             width: 10,
 
         },
+        desInput:{
+            fontSize: 15,
+            width: "100%",
+            borderWidth: 1,
+            padding: 10,
+            borderRadius: 8,
+            borderColor: themeBorderColor,
+            color: themeTextStyle.color,
+        },
         /* ------------ */
         /* Picker Country style */
         picker: {
@@ -273,12 +283,17 @@ const useStyles = () => {
             backgroundColor: "rgba(0,0,0,0.5)", // Fond semi-transparent
             justifyContent: "center",
             alignItems: "center",
+            bottom:0,
+            
         },
         modalContent: {
             width: "100%",
+            height:"70%",
             backgroundColor: "#fff",
             borderRadius: 10,
             padding: 10,
+            bottom:0,
+            position:"absolute"
         },
         closeButton: {
             alignSelf: "flex-end",
@@ -421,6 +436,38 @@ const useStyles = () => {
             paddingRight:10,
             color:themeTextStyle.color
         },
+        modalBackdrop: {
+            flex: 1,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+        modalContainerPost: {
+            backgroundColor: 'white',
+            padding: 20,
+            borderRadius: 10,
+            width: '100%',
+            alignItems: 'center',
+            zIndex:100
+        },
+        modalOption: {
+            fontSize: 18,
+            padding: 10,
+            textAlign: 'center',
+            color: '#333',
+        },
+        buttonShare:{
+            borderRadius: 8,
+            backgroundColor: themeBorderColor,
+            padding: 12,
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: 10,
+            marginBottom: 15,
+        },
+        
         /* ----------- */
         /* project collabs btn */
         containerPojectsCollabsBtn: {

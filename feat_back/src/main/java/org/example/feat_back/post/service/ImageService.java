@@ -22,11 +22,14 @@ public class ImageService {
 
         // Sauvegarder le fichier
         String fileName = file.getOriginalFilename();
+        System.out.println("Nom de fichier reçu : " + fileName);
         Path filePath = uploadPath.resolve(fileName);
         file.transferTo(filePath.toFile());
 
         // Retourner le chemin relatif pour l'URL
-        return "/uploads/" + fileName;
+        String fileUrl = "/uploads/" + fileName;
+        System.out.println("Image sauvegardée à : " + fileUrl);
+        return fileUrl;
     }
 
 }

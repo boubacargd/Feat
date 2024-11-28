@@ -2,10 +2,12 @@ package org.example.feat_back.post.dto;
 
 import org.example.feat_back.post.entity.Post;
 
+import java.util.List;
+
 public class PostDTO {
     private Long id;
     private String content;
-    private String imageUrl;
+    private List<String> imageUrl;  // Liste des URLs des images du post
     private String userName;
     private String userImageUrl; // URL de l'image de profil de l'utilisateur
 
@@ -16,10 +18,10 @@ public class PostDTO {
     public PostDTO(Post post) {
         this.id = post.getId();
         this.content = post.getContent();
-        this.imageUrl = post.getImageUrl();
-        this.userName = post.getUser().getUsername(); // Inclure le nom de l'utilisateur
-        System.out.println("User Image URL: " + userImageUrl); // Ajoutez un log pour déboguer
-        this.userImageUrl = imageUrl;     }
+        this.imageUrl = post.getImageUrls();  // Liste des URLs des images du post
+        this.userName = post.getUser().getUsername();
+        this.userImageUrl = post.getUser().getImageUrl(); // Assurez-vous d'avoir un champ userImageUrl dans UserEntity
+    }
 
     // Getters et Setters
     public Long getId() {
@@ -38,11 +40,11 @@ public class PostDTO {
         this.content = content;
     }
 
-    public String getImageUrl() {
+    public List<String> getImageUrl() {
         return imageUrl;
     }
 
-    public void setImageUrl(String imageUrl) {
+    public void setImageUrl(List<String> imageUrl) {
         this.imageUrl = imageUrl;
     }
 

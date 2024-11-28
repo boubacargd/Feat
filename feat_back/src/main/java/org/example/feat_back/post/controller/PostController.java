@@ -30,7 +30,7 @@ public class PostController {
 
     @Autowired
     private UserRepository userRepository;
-    // Créer un post
+
     @PostMapping("/create")
     public ResponseEntity<?> createPost(@RequestBody PostRequest postRequest, Principal principal) {
         try {
@@ -44,7 +44,8 @@ public class PostController {
             // Créer un nouvel objet Post
             Post post = new Post();
             post.setContent(postRequest.getContent());
-            post.setImageUrl(postRequest.getImageUrl());
+            post.setImageUrls(postRequest.getImageUrl());  // Assurez-vous que vous définissez le bon champ
+
             post.setUser(user); // Associe l'utilisateur attaché
 
             // Sauvegarder le post
@@ -58,6 +59,7 @@ public class PostController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erreur lors de la création du post.");
         }
     }
+
 
     // Récupérer tous les posts
     @GetMapping
@@ -96,8 +98,22 @@ public class PostController {
 
     // Supprimer un post
     @DeleteMapping("/{postId}")
-    public ResponseEntity<?> deletePost(@PathVariable Long postId, @AuthenticationPrincipal UserEntity user) {
-        postService.deletePost(postId, user);
-        return ResponseEntity.ok("Post supprimé avec succès.");
+    public ResponseEntity<?> deletePost(@PathVariable Long postId, Principal principal) {
+        try {
+            // Récupérer l'utilisateur connecté depuis le Principal
+            String email = principal.getName(); // L'email de l'utilisateur authentifié
+            UserEntity user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+            // Appeler le service pour supprimer le post
+            postService.deletePost(postId, user);
+
+            return ResponseEntity.ok("Post supprimé avec succès.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erreur lors de la suppression du post.");
+        }
     }
+
+
 }

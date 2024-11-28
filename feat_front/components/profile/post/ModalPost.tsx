@@ -14,16 +14,22 @@ import useStyles from "@/styles/styleSheet";
 import i18n from "@/app/i18n";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "@/hooks/useTheme";
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { UserPostButton } from "../UserPostButton";
+import { router } from "expo-router";
 
 type SelectedImage = {
     uri: string;
     fileName?: string;
     type?: string;
 };
+type ModalPostProps = {
+    closeModal: () => void; // Définition de la prop closeModal
+};
 
 const { width } = Dimensions.get("window");
 
-export function ModalPost() {
+export function ModalPost({ closeModal }: ModalPostProps) {
     const { themeTextStyle, themeBackgroundColorBtn, themeButtonTextColor } = useTheme();
     const styles = useStyles();
     const [postDetail, setPostDetail] = useState(""); 
@@ -49,20 +55,21 @@ export function ModalPost() {
                 fileName: asset.fileName ?? undefined,
                 type: asset.type,
             })));
+            console.log("Images sélectionnées:", result.assets);  // Log des images sélectionnées
         }
     };
-    
 
     // Supprimer une image de la liste
     const removeImage = (uri: string) => {
         setImages(images.filter(image => image.uri !== uri));
+        console.log("Image supprimée:", uri);  // Log de l'image supprimée
     };
 
     // Télécharger les images sélectionnées
     const uploadImages = async (selectedImages: SelectedImage[]): Promise<string[]> => {
         const token = await AsyncStorage.getItem("jwt_token");
         const imageUrls: string[] = [];
-
+    
         for (const selectedImage of selectedImages) {
             const formData = new FormData();
             formData.append("file", {
@@ -70,8 +77,9 @@ export function ModalPost() {
                 name: selectedImage.fileName || "photo.jpg",
                 type: selectedImage.type || "image/jpeg",
             } as any);
-
+    
             try {
+                console.log(`Uploading image: ${selectedImage.uri}`);  // Log de l'image en cours d'upload
                 const response = await fetch("http://localhost:8080/api/images/upload", {
                     method: "POST",
                     body: formData,
@@ -79,57 +87,66 @@ export function ModalPost() {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-
+    
                 if (!response.ok) {
                     const errorData = await response.text();
                     console.error("Error response:", errorData);
                     throw new Error("Erreur lors de l'upload de l'image.");
                 }
-
+    
                 const data = await response.json();
                 const imageUrl = data.imageUrl.startsWith("http") 
                     ? data.imageUrl 
                     : `http://localhost:8080/${data.imageUrl}`;
                 imageUrls.push(imageUrl);
-
+                console.log("Image uploadée avec succès:", imageUrl);  // Log de l'URL de l'image téléchargée
+    
             } catch (error) {
                 console.error("Error uploading image:", error);
                 Alert.alert("Erreur lors de l'upload de l'image.");
                 return [];
             }
         }
+        console.log(`Total d'images téléchargées: ${imageUrls.length}`);  // Log du nombre d'images uploadées
         return imageUrls;
     };
 
-    // Créer un post avec les images téléchargées
     const handlePost = async () => {
         if (images.length === 0) {
             Alert.alert("Erreur", "Veuillez sélectionner au moins une image.");
             return;
         }
-
+    
         const imageUrls = await uploadImages(images);
         if (imageUrls.length === 0) {
             Alert.alert("Erreur", "Les images n'ont pas pu être téléchargées.");
             return;
         }
-
+    
+        // Debug: Vérifie le contenu des URLs avant d'envoyer
+        console.log("URLs des images à envoyer:", imageUrls);
+    
         const createdPost = await createPost(postDetail, imageUrls);
         if (createdPost) {
             Alert.alert("Succès", "Votre post a été partagé !");
             setImages([]);
             setPostDetail("");
+            closeModal();        
         }
     };
+    
 
     const createPost = async (content: string, imageUrls: string[]) => {
         const token = await AsyncStorage.getItem("jwt_token");
-
+    
         const postPayload = {
             content,
-            imageUrls,
+            imageUrl: imageUrls,  // Assure-toi que tu envoies bien un tableau d'URLs
         };
-
+    
+        // Debug : Vérifie ce que tu envoies dans la requête
+        console.log("Corps de la requête postPayload:", postPayload);
+    
         try {
             const response = await fetch("http://localhost:8080/api/posts/create", {
                 method: "POST",
@@ -139,13 +156,13 @@ export function ModalPost() {
                 },
                 body: JSON.stringify(postPayload),
             });
-
+    
             if (!response.ok) {
                 const errorData = await response.text();
                 console.error("Error response:", errorData);
                 throw new Error("Erreur serveur.");
             }
-
+    
             const data = await response.json();
             console.log("Post créé:", data);
             return data;
@@ -155,6 +172,8 @@ export function ModalPost() {
             return null;
         }
     };
+    
+    
 
     return (
         <View>
@@ -164,15 +183,12 @@ export function ModalPost() {
                     justifyContent: "space-around",
                     alignItems: "center",
                     width: "100%",
-                    height: "80%",
+                    height: "70%",
                 }}
             >
                 <View style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-                    <Text style={[styles.textH1Bold, themeTextStyle]}>
-                        {i18n.t("infoUser.addImg")}
-                    </Text>
+               
 
-                    {/* Utilisation de FlatList pour afficher les images sélectionnées */}
                     <FlatList
                         data={images}
                         horizontal
@@ -181,11 +197,11 @@ export function ModalPost() {
                                 <Image 
                                     key={item.uri + index}
                                     source={{ uri: item.uri }} 
-                                    style={{ width, height: 200, marginVertical: 100, marginRight: 10 }} 
+                                    style={{ width, height: 500, marginRight:10, marginBottom:10 }} 
                                 />
                                 <TouchableOpacity onPress={() => removeImage(item.uri)} style={{ marginTop: 10 }}>
-                                    <Text style={[styles.textH3Bold, themeButtonTextColor]}>
-                                        {i18n.t("infoUser.removeImg")}
+                                    <Text style={[styles.textH3Bold, themeTextStyle]}>
+                                        {i18n.t("infoUser.removeImg")}jj
                                     </Text>
                                 </TouchableOpacity>
                             </View>
@@ -196,10 +212,8 @@ export function ModalPost() {
                 </View>
 
                 <View style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-                    <TouchableOpacity style={[styles.button, themeBackgroundColorBtn]} onPress={pickImages}>
-                        <Text style={[styles.textH3Bold, themeButtonTextColor]}>
-                            {i18n.t("infoUser.chooceImg")}
-                        </Text>
+                    <TouchableOpacity style={[styles.buttonShare, themeBackgroundColorBtn]} onPress={pickImages}>
+                        <Ionicons name="images" size={24} style={[themeButtonTextColor]}/>
                     </TouchableOpacity>
                 </View>
 
@@ -208,12 +222,12 @@ export function ModalPost() {
                     placeholderTextColor="#6a6a6a"
                     value={postDetail}
                     onChangeText={setPostDetail}
-                    style={styles.authInput}
+                    style={styles.desInput}
                 />
 
-                <TouchableOpacity style={styles.buttonAddimg} onPress={handlePost}>
+                <TouchableOpacity style={styles.buttonShare} onPress={handlePost}>
                     <Text style={[styles.textH3Bold, themeButtonTextColor]}>
-                        {i18n.t("infoUser.confirmImg")}
+                        Parager!
                     </Text>
                 </TouchableOpacity>
             </View>

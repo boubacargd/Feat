@@ -23,10 +23,13 @@ public class ImageController {
         try {
             // Sauvegarder l'image
             String imageUrl = imageService.saveImage(file);
-            return ResponseEntity.ok(imageUrl);
+            System.out.println("Image téléchargée avec succès : " + imageUrl);
+            return ResponseEntity.ok(imageUrl);  // Retourner l'URL de l'image
         } catch (IOException e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body("Erreur lors de l'upload de l'image.");
         }
     }
+
 }
+

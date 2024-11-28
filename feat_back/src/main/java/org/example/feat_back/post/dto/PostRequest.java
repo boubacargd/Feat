@@ -1,9 +1,12 @@
 package org.example.feat_back.post.dto;
 
+import java.util.List;
+
 public class PostRequest {
     private String content;
-    private String imageUrl;
+    private List<String> imageUrl;  // Liste des URLs
 
+    // Getters et setters
     public String getContent() {
         return content;
     }
@@ -12,11 +15,13 @@ public class PostRequest {
         this.content = content;
     }
 
-    public String getImageUrl() {
+    public List<String> getImageUrl() {
         return imageUrl;
     }
 
-    public void setImageUrl(String imageUrl) {
+    public void setImageUrl(List<String> imageUrl) {
         this.imageUrl = imageUrl;
     }
 }
+
+
