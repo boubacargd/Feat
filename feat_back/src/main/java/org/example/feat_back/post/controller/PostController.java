@@ -46,8 +46,7 @@ public class PostController {
             post.setContent(postRequest.getContent());
             post.setImageUrls(postRequest.getImageUrl());  // Assurez-vous que vous définissez le bon champ
 
-            post.setUser(user); // Associe l'utilisateur attaché
-
+            post.setUser(user);
             // Sauvegarder le post
             postRepository.save(post);
             Map<String, String> response = new HashMap<>();
@@ -57,6 +56,26 @@ public class PostController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erreur lors de la création du post.");
+        }
+    }
+
+    @GetMapping("/ordered")
+    public ResponseEntity<List<PostDTO>> getUserPostsOrdered(Principal principal) {
+        try {
+            // Récupérer l'email de l'utilisateur connecté
+            String email = principal.getName();
+
+            // Trouver l'utilisateur dans la base de données
+            UserEntity user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+            // Récupérer les posts triés
+            List<PostDTO> userPosts = postService.getPostsByUserOrdered(user);
+
+            return ResponseEntity.ok(userPosts);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
 

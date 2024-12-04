@@ -1,15 +1,16 @@
 import { Tabs } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { LinearGradient } from 'expo-linear-gradient';
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import Octicons from '@expo/vector-icons/Octicons';
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
         tabBarShowLabel: false,
-        headerShown: false, 
+        headerShown: false,
       }}
+
     >
       {/* Onglet Home */}
       <Tabs.Screen
@@ -29,12 +30,13 @@ export default function TabLayout() {
         options={{
           tabBarIcon: ({ focused }: { focused: boolean }) =>
             focused ? (
-              <FontAwesome6 name="ranking-star" size={28} color="black" />
+              <FontAwesome5 name="bars" size={28} color="black" />
             ) : (
-              <FontAwesome6 name="ranking-star" size={24} color="black" />
+              <Octicons name="three-bars" size={28} color="black" />
             ),
         }}
       />
+
       {/* Onglet Messages */}
       <Tabs.Screen
         name="messages"

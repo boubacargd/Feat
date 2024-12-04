@@ -1,70 +1,51 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, View, Dimensions, ActivityIndicator, Text, ScrollView } from 'react-native';
 import useStyles from '../../styles/styleSheet';
-import Animated, { interpolate, useAnimatedRef, useAnimatedStyle, useSharedValue, useAnimatedScrollHandler } from 'react-native-reanimated';
-import { useTheme } from '../../hooks/useTheme';
-import { Link, useRouter } from 'expo-router';
-
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native'; // Pour utiliser la navigation
-import UserInfo from '../../components/profile/UserInfo';
+import { useRouter } from 'expo-router';
+import UserImageName from '../../components/profile/userInfo/UserImageName';
 import { UserStats } from '@/components/profile/UserStats';
-import { UserSettings } from '@/components/profile/UserSettings';
-import { UserEditButton } from '@/components/profile/UserEditButton';
+import { PostList } from '@/components/profile/post/PostList';
 import { UserPostButton } from '@/components/profile/UserPostButton';
-import { UserPosts } from '@/components/profile/post/UserPosts';
-import { ProjectsCollabsBtn } from '@/components/ProjectsCollabsBtn';
+import UserActivitiesCountry from '@/components/profile/userInfo/UserActivitiesCountry';
 
 const { width } = Dimensions.get("window");
-const userImageHeight = 300;
 
 export default function Profile() {
     const styles = useStyles();
     const router = useRouter();
-    const { themeTextStyle, themeContainerStyle, themeBackgroundColorBtn, themeButtonTextColor, themeBorderColor } = useTheme();
-
-    const scrollRef = useAnimatedRef<Animated.ScrollView>();
-    const scrollOffset = useSharedValue(0);
-
+    
     const [userInfo, setUserInfo] = useState<{ name: string; country: string; activities: string, imageUrl: string } | null>(null);
     const [loading, setLoading] = useState(true);
-    const [navigating, setNavigating] = useState(false);
-
-
-    const scrollHandler = useAnimatedScrollHandler((event) => {
-        scrollOffset.value = event.contentOffset.y;
-    });
-
-    const isValidJWT = (token: string) => {
-        return token && token.split('.').length === 3;
-    };
+    const [orderedPosts, setOrderedPosts] = useState<any[]>([]); // Posts triés
+    const [userPosts, setUserPosts] = useState<any[]>([]); // Posts de l'utilisateur
 
     useEffect(() => {
         const checkToken = async () => {
             const token = await AsyncStorage.getItem('jwt_token');
 
             if (!token) {
-                setNavigating(true);
-                return; // Sortie de la fonction
+                router.push("/login");
+                return;
             }
 
             if (isValidJWT(token)) {
                 await fetchUserInfo(token);
+                await fetchOrderedPosts(token); // Appel pour les posts triés
+                await fetchUserPosts(token); // Appel pour les posts de l'utilisateur
             } else {
-                setNavigating(true);
+                router.push("/login");
             }
         };
 
         checkToken();
     }, []);
 
-    /*     useEffect(() => {
-            if (navigating) {
-                navigation.navigate('/home');
-            }
-        }, [navigating, navigation]); */
+    const isValidJWT = (token: string) => {
+        return token && token.split('.').length === 3;
+    };
 
     const fetchUserInfo = async (token: string) => {
         setLoading(true);
@@ -80,15 +61,11 @@ export default function Profile() {
                 params: { email: userEmail }
             });
 
-            const imageUrl = response.data.imageUrl
-                ? response.data.imageUrl
-                : "http://localhost:8080/uploads/1731499742849_photo.jpg";
-
-            const { name, country } = response.data;
+            const { name, country, activities, imageUrl } = response.data;
             setUserInfo({
-                name: name,
-                country: country,
-                activities: response.data.activities,
+                name,
+                country,
+                activities,
                 imageUrl: imageUrl || "loading"
             });
         } catch (error) {
@@ -98,20 +75,45 @@ export default function Profile() {
         }
     };
 
+    const fetchOrderedPosts = async (token: string) => {
+        try {
+            const response = await axios.get('http://localhost:8080/api/posts/ordered', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            console.log("Posts triés récupérés:", response.data);
+            setOrderedPosts(response.data); // Mettez à jour l'état des posts triés
+        } catch (error) {
+            console.error("Erreur lors de la récupération des posts triés:", error);
+        }
+    };
+
+    const fetchUserPosts = async (token: string) => {
+        try {
+            const response = await axios.get('http://localhost:8080/api/posts/user', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            console.log("Posts de l'utilisateur récupérés:", response.data);
+            setUserPosts(response.data); // Mettez à jour l'état des posts de l'utilisateur
+        } catch (error) {
+            console.error("Erreur lors de la récupération des posts de l'utilisateur:", error);
+        }
+    };
+
     const handleLogout = async () => {
         try {
             const token = await AsyncStorage.getItem('jwt_token');
             if (token) {
-                // Appelez le point de terminaison de déconnexion
                 await axios.post('http://localhost:8080/api/public/logout', {}, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
             }
-            // Supprimez le token du stockage local après déconnexion
             await AsyncStorage.removeItem('jwt_token');
-            // Naviguez vers l'écran de connexion ou un autre écran approprié
             router.push("/login")
         } catch (error) {
             console.error("Erreur lors de la déconnexion:", error);
@@ -123,29 +125,32 @@ export default function Profile() {
     }
 
     if (userInfo) {
-
         return (
-            <SafeAreaView style={styles.container}>
-
+            <View style={styles.container}>
                 <ScrollView>
-
-                    <UserInfo
+                    <UserImageName
                         name={userInfo.name}
                         country={userInfo.country}
                         activities={userInfo.activities}
                         imageUrl={userInfo.imageUrl}
-                        themeTextStyle={themeTextStyle}
                     />
-                        
+                    <UserActivitiesCountry
+                        country={userInfo.country}
+                        activities={userInfo.activities}
+                    />
                     <UserStats />
-                    <ProjectsCollabsBtn/>
-                    <UserPosts />
 
-                    <Text style={{ padding: 10, marginTop: 50, backgroundColor: "red" }} onPress={handleLogout}>logout</Text>
+                    {/* Affichage des posts triés */}
+                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Posts triés</Text>
+                    <PostList posts={orderedPosts} />
+
+                    {/* Affichage des posts de l'utilisateur */}
+                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Mes posts</Text>
+                    <PostList posts={userPosts} /> 
                 </ScrollView>
+                <Text style={{ margin: "auto", color: "white", padding: 20, fontWeight: 700, }} onPress={handleLogout}>Logout</Text>
                 <UserPostButton />
-
-            </SafeAreaView>
+            </View>
         );
     }
 

@@ -2,6 +2,7 @@ package org.example.feat_back.post.dto;
 
 import org.example.feat_back.post.entity.Post;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class PostDTO {
@@ -10,7 +11,7 @@ public class PostDTO {
     private List<String> imageUrl;  // Liste des URLs des images du post
     private String userName;
     private String userImageUrl; // URL de l'image de profil de l'utilisateur
-
+    private LocalDateTime createdAt;
     // Constructeur par défaut
     public PostDTO() {}
 
@@ -20,7 +21,8 @@ public class PostDTO {
         this.content = post.getContent();
         this.imageUrl = post.getImageUrls();  // Liste des URLs des images du post
         this.userName = post.getUser().getUsername();
-        this.userImageUrl = post.getUser().getImageUrl(); // Assurez-vous d'avoir un champ userImageUrl dans UserEntity
+        this.userImageUrl = post.getUser().getImageUrl();
+        this.createdAt = post.getCreatedAt();
     }
 
     // Getters et Setters
@@ -62,5 +64,13 @@ public class PostDTO {
 
     public void setUserImageUrl(String userImageUrl) {
         this.userImageUrl = userImageUrl;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

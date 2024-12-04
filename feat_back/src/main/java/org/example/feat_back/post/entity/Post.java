@@ -19,9 +19,16 @@ public class Post {
     @ElementCollection
     private List<String> imageUrls;  // Liste des URLs des images
 
-
     @ManyToOne
     private UserEntity user;
+
+    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 
     // Getters et setters
     public Long getId() {
@@ -54,5 +61,9 @@ public class Post {
 
     public void setUser(UserEntity user) {
         this.user = user;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 }

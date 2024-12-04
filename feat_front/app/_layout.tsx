@@ -45,7 +45,7 @@ export default function RootLayout() {
                     headerTitle: "Profile",
                 }}
             />
-      
+
             <Stack.Screen
                 name="(tabs)"
                 options={{

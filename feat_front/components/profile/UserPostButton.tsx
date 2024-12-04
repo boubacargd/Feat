@@ -2,7 +2,7 @@ import { useState } from "react";
 import { View, TouchableOpacity, Modal, Text } from "react-native";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import useStyles from "@/styles/styleSheet";
-import { ModalPost } from "./post/ModalPost";
+import { ModalPost } from "./post/PostModal";
 import { useTheme } from "@/hooks/useTheme";
 
 export function UserPostButton() {

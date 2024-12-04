@@ -21,11 +21,18 @@ public class PostService {
         Post post = new Post();
         post.setContent(postDTO.getContent());
         post.setImageUrls(postDTO.getImageUrl());
-        post.setUser(user); // Relier le post à l'utilisateur connecté
+        post.setUser(user);
 
         Post savedPost = postRepository.save(post);
         return new PostDTO(savedPost);
     }
+    public List<PostDTO> getPostsByUserOrdered(UserEntity user) {
+        List<Post> userPosts = postRepository.findByUserOrderByCreatedAtDesc(user);
+        return userPosts.stream()
+                .map(PostDTO::new)
+                .collect(Collectors.toList());
+    }
+
 
     // Récupérer tous les posts
     public List<PostDTO> getAllPosts() {
@@ -48,19 +55,12 @@ public class PostService {
     public List<PostDTO> getPostsByUser(UserEntity user) {
         // Récupérer les posts depuis le repository
         List<Post> userPosts = postRepository.findByUser(user);
-
-        // Convertir les entités Post en DTOs
         return userPosts.stream().map(post -> new PostDTO(post)).collect(Collectors.toList());
     }
 
-
-
-    // Récupérer un post par ID
     public PostDTO getPostById(Long postId) {
         Post post = postRepository.findPostWithUserImage(postId)
                 .orElseThrow(() -> new RuntimeException("Post introuvable."));
-
-        // Créer et retourner un PostDTO
         return new PostDTO(post);
     }
 
@@ -69,13 +69,9 @@ public class PostService {
         // Vérifier si le post existe
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post non trouvé"));
-
-        // Vérifier si l'utilisateur est autorisé à supprimer ce post
         if (!post.getUser().getId().equals(user.getId())) {
             throw new RuntimeException("Vous n'êtes pas autorisé à supprimer ce post.");
         }
-
-        // Supprimer le post
         postRepository.delete(post);
     }
 

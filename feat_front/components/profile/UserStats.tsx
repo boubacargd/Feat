@@ -10,18 +10,18 @@ export function UserStats() {
     return (
         <View style={styles.containerUserStats}>
             <View style={styles.viewStats}>
-                <Text style={[styles.textStats, themeTextStyle]}>35</Text>
-                <Text style={[styles.textLabel, themeTextStyle]}>Projects</Text>
+                <Text style={[styles.textStats]}>39</Text>
+                <Text style={[styles.textLabel]}>Projects,</Text>
             </View>
 
-            <View style={[styles.viewStats, styles.middleStats]}>
-                <Text style={[styles.textStats, themeTextStyle]}>2390</Text>
-                <Text style={[styles.textLabel, themeTextStyle]}>Followers</Text>
+            <View style={[styles.viewStats]}>
+                <Text style={[styles.textStats]}>2390</Text>
+                <Text style={[styles.textLabel]}>Followers,</Text>
             </View>
 
             <View style={styles.viewStats}>
-                <Text style={[styles.textStats, themeTextStyle]}>9</Text>
-                <Text style={[styles.textLabel, themeTextStyle]}>Collabs</Text>
+                <Text style={[styles.textStats]}>9</Text>
+                <Text style={[styles.textLabel]}>Collabs.</Text>
             </View>
         </View>
     );

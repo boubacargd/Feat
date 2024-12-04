@@ -10,10 +10,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
-    List<Post> findByUser (UserEntity user);
-
-
+    List<Post> findByUser(UserEntity user);
 
     @Query("SELECT p FROM Post p JOIN FETCH p.user WHERE p.id = :postId")
     Optional<Post> findPostWithUserImage(@Param("postId") Long postId);
+
+    @Query("SELECT p FROM Post p WHERE p.user = :user ORDER BY p.createdAt DESC")
+    List<Post> findByUserOrderByCreatedAtDesc(@Param("user") UserEntity user);
 }

@@ -22,7 +22,7 @@ const useStyles = () => {
             justifyContent: 'flex-start',
             alignContent: 'center',
             width,
-            backgroundColor:themeScreenStyle,
+            backgroundColor:"black",
         },
       
         textH1Bold: {
@@ -201,18 +201,7 @@ const useStyles = () => {
         /* ----------------- */
         /* Profile styles */
         containerUserInfo: {
-            display: "flex",
-            flexDirection: "row",
-            backgroundColor: "#fff",
-            width:"100%",
-            borderRadius: 12,
-            padding: 15,
-            marginBottom: 20,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 4,
-            elevation: 3,
+            
         },
 
       
@@ -222,7 +211,6 @@ const useStyles = () => {
             justifyContent: "center",
             borderColor: themeBorderColor,
             borderWidth: 1,
-          
             alignItems: "center",
             borderRadius: 8,
 
@@ -231,40 +219,28 @@ const useStyles = () => {
         /* User stats styles */
 
         containerUserStats: {
-            width:"100%",
             display: "flex",
             flexDirection: "row",
-            justifyContent: "center",
-            alignSelf:"center",
             padding: 10,
-            backgroundColor: themeContainerStyle.backgroundColor,
-            borderRadius: 12,
-            marginBottom: 20,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 4,
-            elevation: 3,
-            
+            backgroundColor: "black",
         },
         viewStats: {
             display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            flex: 1,
+            flexDirection:"row",
+            justifyContent:"flex-start",
         },
-        middleStats: {
-            borderLeftWidth: 1,
-            borderRightWidth: 1,
-            paddingHorizontal: 10,
-        },
+     
         textStats: {
-            fontSize: 16,
+            fontSize: 12,
             fontWeight: "bold",
+            color:"white",
+            marginRight:5
         },
         textLabel: {
-            fontSize: 14,
-            color: "gray",
+            fontSize: 12,
+            color:"white",
+            marginRight:5
+
         },
 
         /* ---------------- */
@@ -338,13 +314,57 @@ const useStyles = () => {
             fontWeight: "bold",
         },
         /* Post liste styles */
+       
+        
+        /* ----------- */
+        /* project collabs btn */
+        containerPojectsCollabsBtn: {
+            flexDirection: "row",
+            backgroundColor: "black",
+            padding: 5,
+            borderRadius: 8,
+            justifyContent: "center",
+            alignItems: "center",
+            alignSelf: "center",
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 3,
+        },
+        buttonProjectsCollabs: {
+            flex: 1, 
+            paddingVertical: 8,
+            backgroundColor: "transparent",
+            justifyContent: "center",
+            alignItems: "center",
+            borderRadius: 5,
+        },
+        activeButton: {
+            backgroundColor: "#ededed", // Couleur de fond du bouton actif
+            shadowOpacity: 0.1,
+            shadowRadius: 3,
+            shadowOffset: { width: 0, height: 1 },
+        },
+        buttonTextProjectsCollabs: {
+            fontSize: 14,
+            color: themeTextStyle.color, // Couleur du texte par défaut
+            fontWeight: "500",
+        },
+        activeButtonText: {
+            color: "black", // Couleur du texte actif
+            fontWeight: "bold",
+        },
+        /* ------- */
+
+
         containerPostList: {
             flex: 1,
             width:"100%",
             marginTop:20,
         },
         postCard: {
-            backgroundColor: themeContainerStyle.backgroundColor,
+            backgroundColor: "white",
             borderRadius: 12,
             padding: 15,
             marginBottom: 20,
@@ -353,6 +373,7 @@ const useStyles = () => {
             shadowOpacity: 0.1,
             shadowRadius: 4,
             elevation: 3,
+            width:"50%",
         },
         userInfoPost: {
             flexDirection: "row",
@@ -467,48 +488,7 @@ const useStyles = () => {
             marginTop: 10,
             marginBottom: 15,
         },
-        
-        /* ----------- */
-        /* project collabs btn */
-        containerPojectsCollabsBtn: {
-            flexDirection: "row",
-            backgroundColor: themeContainerStyle.backgroundColor,
-            padding: 5,
-            borderRadius: 8,
-            justifyContent: "center",
-            alignItems: "center",
-            alignSelf: "center",
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 4,
-            elevation: 3,
-        },
-        buttonProjectsCollabs: {
-            flex: 1, // Prend une largeur égale dans le conteneur
-            paddingVertical: 8,
-            backgroundColor: "transparent",
-            justifyContent: "center",
-            alignItems: "center",
-            borderRadius: 5,
-        },
-        activeButton: {
-            backgroundColor: "#ededed", // Couleur de fond du bouton actif
-            shadowColor: "#000",
-            shadowOpacity: 0.1,
-            shadowRadius: 3,
-            shadowOffset: { width: 0, height: 1 },
-        },
-        buttonTextProjectsCollabs: {
-            fontSize: 14,
-            color: themeTextStyle.color, // Couleur du texte par défaut
-            fontWeight: "500",
-        },
-        activeButtonText: {
-            color: "black", // Couleur du texte actif
-            fontWeight: "bold",
-        },
-        /* ------- */
+        /* editt */
     });
 };
 
