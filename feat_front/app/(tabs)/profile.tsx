@@ -116,7 +116,7 @@ export default function Profile() {
             await AsyncStorage.removeItem('jwt_token');
             router.push("/login")
         } catch (error) {
-            console.error("Erreur lors de la déconnexion:", error);
+            console.error("Erreur lors de la déconnexion :", error);
         }
     };
 
