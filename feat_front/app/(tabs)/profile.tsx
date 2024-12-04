@@ -16,11 +16,10 @@ const { width } = Dimensions.get("window");
 export default function Profile() {
     const styles = useStyles();
     const router = useRouter();
-    
+
     const [userInfo, setUserInfo] = useState<{ name: string; country: string; activities: string, imageUrl: string } | null>(null);
     const [loading, setLoading] = useState(true);
     const [orderedPosts, setOrderedPosts] = useState<any[]>([]); // Posts triés
-    const [userPosts, setUserPosts] = useState<any[]>([]); // Posts de l'utilisateur
 
     useEffect(() => {
         const checkToken = async () => {
@@ -32,9 +31,8 @@ export default function Profile() {
             }
 
             if (isValidJWT(token)) {
-                await fetchUserInfo(token);
+                await fetchUserInfo(token); // Récupère uniquement les infos utilisateur
                 await fetchOrderedPosts(token); // Appel pour les posts triés
-                await fetchUserPosts(token); // Appel pour les posts de l'utilisateur
             } else {
                 router.push("/login");
             }
@@ -89,20 +87,6 @@ export default function Profile() {
         }
     };
 
-    const fetchUserPosts = async (token: string) => {
-        try {
-            const response = await axios.get('http://localhost:8080/api/posts/user', {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            console.log("Posts de l'utilisateur récupérés:", response.data);
-            setUserPosts(response.data); // Mettez à jour l'état des posts de l'utilisateur
-        } catch (error) {
-            console.error("Erreur lors de la récupération des posts de l'utilisateur:", error);
-        }
-    };
-
     const handleLogout = async () => {
         try {
             const token = await AsyncStorage.getItem('jwt_token');
@@ -140,13 +124,9 @@ export default function Profile() {
                     />
                     <UserStats />
 
-                    {/* Affichage des posts triés */}
-                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Posts triés</Text>
+                    {/* Affichage des posts triés uniquement */}
+                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Posts</Text>
                     <PostList posts={orderedPosts} />
-
-                    {/* Affichage des posts de l'utilisateur */}
-                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Mes posts</Text>
-                    <PostList posts={userPosts} /> 
                 </ScrollView>
                 <Text style={{ margin: "auto", color: "white", padding: 20, fontWeight: 700, }} onPress={handleLogout}>Logout</Text>
                 <UserPostButton />
