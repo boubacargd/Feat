@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, Image, Modal, StyleSheet, Dimensions, SafeAreaView, FlatList, TouchableOpacity } from "react-native";
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { PostModalOption } from "@/components/profile/post/PostModalOption"; // Importer le modal d'options
 import Ionicons from '@expo/vector-icons/Ionicons';
-
+import { PostModalOption } from "@/components/profile/post/PostModalOption";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const { width } = Dimensions.get("window");
 
 type PostCardProps = {
@@ -20,10 +20,73 @@ type PostCardProps = {
 
 export default function PostDetails({ posts, isVisible, toggleModal }: PostCardProps) {
     const [currentIndexes, setCurrentIndexes] = useState<number[]>(new Array(posts.length).fill(0));
-    const [likedPosts, setLikedPosts] = useState<boolean[]>(new Array(posts.length).fill(false)); // Gérer les likes
-    const [favoritedPosts, setFavoritedPosts] = useState<boolean[]>(new Array(posts.length).fill(false)); // Gérer les favoris
-    const [modalVisible, setModalVisible] = useState(false); // État pour le modal
-    const [selectedPost, setSelectedPost] = useState(null); // Post sélectionné pour le modal
+    const [likedPosts, setLikedPosts] = useState<boolean[]>(new Array(posts.length).fill(false));
+    const [favoritedPosts, setFavoritedPosts] = useState<boolean[]>(new Array(posts.length).fill(false));
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedPost, setSelectedPost] = useState(null);
+    const [likeCounts, setLikeCounts] = useState<number[]>(new Array(posts.length).fill(0));
+    const [usersWhoLiked, setUsersWhoLiked] = useState<any[][]>(new Array(posts.length).fill([]));
+
+    const fetchLikesData = async (postId: number, index: number) => {
+        try {
+            // Récupérer le token JWT depuis AsyncStorage
+            const token = await AsyncStorage.getItem('jwt_token');
+            
+            // Vérifier si le token existe
+            if (!token) {
+                throw new Error("Token d'authentification manquant");
+            }
+    
+            // Utiliser le token dans l'en-tête Authorization
+            const likeCountResponse = await fetch(`http://localhost:8080/api/likes/count/${postId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+    
+            const usersWhoLikedResponse = await fetch(`http://localhost:8080/api/likes/users/${postId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+    
+            // Vérification de la réponse avant de la parser
+            if (!likeCountResponse.ok) {
+                throw new Error(`Erreur HTTP: ${likeCountResponse.status}`);
+            }
+            if (!usersWhoLikedResponse.ok) {
+                throw new Error(`Erreur HTTP: ${usersWhoLikedResponse.status}`);
+            }
+    
+            const likeCountData = await likeCountResponse.json();
+            const usersWhoLikedData = await usersWhoLikedResponse.json();
+    
+            console.log('Like count:', likeCountData);
+            console.log('Users who liked:', usersWhoLikedData);
+    
+            // Mise à jour de l'état avec les nouvelles données
+            setLikeCounts(prev => {
+                const updated = [...prev];
+                updated[index] = likeCountData || 0;
+                return updated;
+            });
+    
+            setUsersWhoLiked(prev => {
+                const updated = [...prev];
+                updated[index] = usersWhoLikedData || [];
+                return updated;
+            });
+        } catch (error) {
+            console.error("Erreur lors de la récupération des données de like:", error);
+        }
+    };
+    
+
+    useEffect(() => {
+        posts.forEach((post, index) => {
+            fetchLikesData(post.id, index); // Récupérer les données pour chaque post
+        });
+    }, [posts]);
 
     const handleScroll = (index: number, contentOffsetX: number) => {
         const newIndexes = [...currentIndexes];
@@ -32,11 +95,45 @@ export default function PostDetails({ posts, isVisible, toggleModal }: PostCardP
         setCurrentIndexes(newIndexes);
     };
 
-    const handleLike = (index: number) => {
+    const handleLike = async (index: number, postId: number) => {
         const newLikes = [...likedPosts];
-        newLikes[index] = !newLikes[index]; // Inverser l'état du like
+        const newLikeStatus = !newLikes[index];
+        newLikes[index] = newLikeStatus; // Inverser l'état du like
+    
+        // Mise à jour locale du like
         setLikedPosts(newLikes);
+    
+        // Récupérer le token JWT depuis AsyncStorage
+        const token = await AsyncStorage.getItem('jwt_token');
+        if (!token) {
+            console.error('Token manquant');
+            return;
+        }
+    
+        // Inclure userId dans l'URL
+        const userId = 123; // Remplacez par l'ID de l'utilisateur authentifié
+        try {
+            const response = await fetch(`http://localhost:8080/api/likes/toggle/${postId}/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+    
+            if (response.ok) {
+                console.log('Le like a été mis à jour avec succès.');
+                fetchLikesData(postId, index);
+            } else {
+                console.error('Erreur HTTP lors du changement de like:', response.status);
+                const errorMessage = await response.text();
+                console.error('Message d\'erreur du serveur:', errorMessage);
+            }
+        } catch (error) {
+            console.error('Erreur lors de la mise à jour du like:', error);
+        }
     };
+    
 
     const handleFavorite = (index: number) => {
         const newFavorites = [...favoritedPosts];
@@ -45,8 +142,8 @@ export default function PostDetails({ posts, isVisible, toggleModal }: PostCardP
     };
 
     const openModal = (post: any) => {
-        setSelectedPost(post); // Stocker le post sélectionné
-        setModalVisible(true); // Afficher le modal
+        setSelectedPost(post);
+        setModalVisible(true);
     };
 
     const renderItem = ({ item, index }: { item: PostCardProps["posts"][0]; index: number }) => (
@@ -54,7 +151,7 @@ export default function PostDetails({ posts, isVisible, toggleModal }: PostCardP
             <View style={styles.header}>
                 <Image source={{ uri: item.userImageUrl }} style={styles.userImage} />
                 <Text style={styles.userName}>{item.userName}</Text>
-                <TouchableOpacity onPress={() => openModal(item)} style={{position:"absolute", right:5}}>
+                <TouchableOpacity onPress={() => openModal(item)} style={{ position: "absolute", right: 5 }}>
                     <Ionicons name="ellipsis-horizontal" size={20} color="white" />
                 </TouchableOpacity>
             </View>
@@ -63,20 +160,16 @@ export default function PostDetails({ posts, isVisible, toggleModal }: PostCardP
                 data={item.imageUrl}
                 horizontal
                 keyExtractor={(url) => url}
-                renderItem={({ item }) => (
-                    <Image source={{ uri: item }} style={styles.mainImage} />
-                )}
-                onScroll={({ nativeEvent }) => {
-                    handleScroll(index, nativeEvent.contentOffset.x);
-                }}
+                renderItem={({ item }) => <Image source={{ uri: item }} style={styles.mainImage} />}
+                onScroll={({ nativeEvent }) => handleScroll(index, nativeEvent.contentOffset.x)}
                 showsHorizontalScrollIndicator={false}
             />
 
             <View style={styles.iconsContainer}>
-                <View style={{ display: "flex", flexDirection: "row" }}>
-                    <TouchableOpacity onPress={() => handleLike(index)} style={[styles.icon, { paddingRight: 20 }]}>
+                <View style={{ flexDirection: "row" }}>
+                    <TouchableOpacity onPress={() => handleLike(index, item.id)} style={[styles.icon, { paddingRight: 20 }]}>
                         <AntDesign name={likedPosts[index] ? "heart" : "hearto"} size={20} color="white" style={{ paddingRight: 5 }} />
-                        <Text style={{ color: "white" }}>290</Text>
+                        <Text style={{ color: "white" }}>{likeCounts[index]} </Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity style={styles.icon}>
@@ -86,13 +179,7 @@ export default function PostDetails({ posts, isVisible, toggleModal }: PostCardP
 
                 <View style={styles.pagination}>
                     {item.imageUrl.map((_, imageIndex) => (
-                        <View
-                            key={imageIndex}
-                            style={[
-                                styles.paginationDot,
-                                currentIndexes[index] === imageIndex && styles.activeDot,
-                            ]}
-                        />
+                        <View key={imageIndex} style={[styles.paginationDot, currentIndexes[index] === imageIndex && styles.activeDot]} />
                     ))}
                 </View>
 
@@ -102,7 +189,7 @@ export default function PostDetails({ posts, isVisible, toggleModal }: PostCardP
             </View>
 
             <View style={styles.contentContainer}>
-                <Text style={{ fontSize: 12, fontWeight:800, color: "white", paddingRight: 5 }}>{item.userName}</Text>
+                <Text style={{ fontSize: 12, fontWeight: "800", color: "white", paddingRight: 5 }}>{item.userName}</Text>
                 <Text style={styles.content}>{item.content}</Text>
             </View>
         </View>
@@ -124,15 +211,15 @@ export default function PostDetails({ posts, isVisible, toggleModal }: PostCardP
     };
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
+        <SafeAreaView>
             <Modal visible={isVisible} animationType="slide" onRequestClose={toggleModal}>
                 <View style={styles.modalHeader}>
-                    <TouchableOpacity onPress={toggleModal} style={{ justifyContent: "center", alignContent: "flex-end", left: 20 }}>
+                    <TouchableOpacity onPress={toggleModal} style={{ justifyContent: "center", alignContent: "flex-end", left: 18 }}>
                         <AntDesign name="down" size={24} color="black" />
                     </TouchableOpacity>
 
                     <View style={styles.headerCenter}>
-                        <Text style={{ color: "black", fontWeight: "bold", fontSize:24 }}>{posts[0]?.userName}</Text>
+                        <Text style={{ color: "black", fontWeight: "bold", fontSize: 20 }}>{posts[0]?.userName}</Text>
                         <Text style={[styles.title, { color: "black" }]}>Post</Text>
                     </View>
                 </View>
@@ -143,9 +230,9 @@ export default function PostDetails({ posts, isVisible, toggleModal }: PostCardP
                     keyExtractor={(item) => item.id.toString()}
                     contentContainerStyle={styles.flatListContent}
                     showsVerticalScrollIndicator={false}
-                    style={{ backgroundColor: "black" }}
+                    style={styles.flatListStyle}
                 />
-            
+
                 <PostModalOption
                     modalVisible={modalVisible}
                     setModalVisible={setModalVisible}
@@ -154,17 +241,18 @@ export default function PostDetails({ posts, isVisible, toggleModal }: PostCardP
                     handleSharePost={handleSharePost}
                     handleDeletePost={handleDeletePost}
                 />
-
             </Modal>
         </SafeAreaView>
     );
 }
+
+
 const styles = StyleSheet.create({
     postContainer: {
-        backgroundColor: "black",
         marginBottom: 50,
-        borderRadius: 10,
-        overflow: "hidden"
+        width: width, 
+        padding: 0, 
+        marginLeft: 0, 
     },
     header: {
         flexDirection: "row",
@@ -179,7 +267,7 @@ const styles = StyleSheet.create({
         marginRight: 10,
     },
     userName: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: "bold",
         color: "white",
         textAlign: "center",
@@ -189,13 +277,15 @@ const styles = StyleSheet.create({
         color: "white",
     },
     mainImage: {
-        width,
-        height: 400,
-
+        width: width,
+        height: 300,
+        resizeMode: "cover",
+        margin: 0, 
+        padding: 0, 
     },
     contentContainer: {
         padding: 10,
-        flexDirection: "row"
+        flexDirection: "row",
     },
     content: {
         fontSize: 14,
@@ -209,15 +299,18 @@ const styles = StyleSheet.create({
         borderWidth: 0.2,
         borderBottomColor: "white",
         display: "flex",
-
     },
     headerCenter: {
         flex: 1,
         alignItems: "center",
-        right: 15
+        right: 15,
     },
     flatListContent: {
-        padding: 10,
+        padding: 0, 
+    },
+    flatListStyle: {
+        width: width, 
+        backgroundColor: "black",
     },
     pagination: {
         right: 38,

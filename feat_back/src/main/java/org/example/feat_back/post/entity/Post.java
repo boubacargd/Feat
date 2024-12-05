@@ -6,6 +6,7 @@ import org.example.feat_back.authentication.user.UserEntity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 public class Post {
@@ -30,6 +31,8 @@ public class Post {
         this.createdAt = LocalDateTime.now();
     }
 
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    private Set<Like> likes;
     // Getters et setters
     public Long getId() {
         return id;
@@ -65,5 +68,13 @@ public class Post {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public Set<Like> getLikes() {
+        return likes;
+    }
+
+    public void setLikes(Set<Like> likes) {
+        this.likes = likes;
     }
 }

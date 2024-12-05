@@ -124,8 +124,6 @@ export default function Profile() {
                     />
                     <UserStats />
 
-                    {/* Affichage des posts triés uniquement */}
-                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Posts</Text>
                     <PostList posts={orderedPosts} />
                 </ScrollView>
                 <Text style={{ margin: "auto", color: "white", padding: 20, fontWeight: 700, }} onPress={handleLogout}>Logout</Text>

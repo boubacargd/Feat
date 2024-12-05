@@ -14,13 +14,11 @@ const useStyles = () => {
             height: 70,
             justifyContent: 'flex-end',
             alignItems: 'center',
-            paddingVertical: 8,
         },
       
         container: {
             flex: 1,
             justifyContent: 'flex-start',
-            alignContent: 'center',
             width,
             backgroundColor:"black",
         },
