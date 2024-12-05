@@ -29,51 +29,39 @@ export default function PostDetails({ posts, isVisible, toggleModal }: PostCardP
 
     const fetchLikesData = async (postId: number, index: number) => {
         try {
-            // Récupérer le token JWT depuis AsyncStorage
             const token = await AsyncStorage.getItem('jwt_token');
-            
-            // Vérifier si le token existe
             if (!token) {
                 throw new Error("Token d'authentification manquant");
             }
     
-            // Utiliser le token dans l'en-tête Authorization
             const likeCountResponse = await fetch(`http://localhost:8080/api/likes/count/${postId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
             });
     
-            const usersWhoLikedResponse = await fetch(`http://localhost:8080/api/likes/users/${postId}`, {
+            const isLikedResponse = await fetch(`http://localhost:8080/api/likes/isLiked/${postId}/123`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
             });
     
-            // Vérification de la réponse avant de la parser
-            if (!likeCountResponse.ok) {
-                throw new Error(`Erreur HTTP: ${likeCountResponse.status}`);
-            }
-            if (!usersWhoLikedResponse.ok) {
-                throw new Error(`Erreur HTTP: ${usersWhoLikedResponse.status}`);
+            if (!likeCountResponse.ok || !isLikedResponse.ok) {
+                throw new Error("Erreur lors de la récupération des données de like");
             }
     
             const likeCountData = await likeCountResponse.json();
-            const usersWhoLikedData = await usersWhoLikedResponse.json();
+            const isLikedData = await isLikedResponse.json();
     
-            console.log('Like count:', likeCountData);
-            console.log('Users who liked:', usersWhoLikedData);
-    
-            // Mise à jour de l'état avec les nouvelles données
             setLikeCounts(prev => {
                 const updated = [...prev];
                 updated[index] = likeCountData || 0;
                 return updated;
             });
     
-            setUsersWhoLiked(prev => {
+            setLikedPosts(prev => {
                 const updated = [...prev];
-                updated[index] = usersWhoLikedData || [];
+                updated[index] = isLikedData || false;
                 return updated;
             });
         } catch (error) {

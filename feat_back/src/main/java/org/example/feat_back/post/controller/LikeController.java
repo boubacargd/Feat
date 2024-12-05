@@ -31,4 +31,10 @@ public class LikeController {
     public List<UserEntity> getUsersWhoLikedPost(@PathVariable Long postId) {
         return likeService.getUsersWhoLikedPost(postId);
     }
+
+    @GetMapping("/isLiked/{postId}/{userId}")
+    public boolean isPostLikedByUser(@PathVariable Long postId, @PathVariable Long userId) {
+        return likeService.isPostLikedByUser(postId, userId);
+    }
+
 }

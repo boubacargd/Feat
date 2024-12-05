@@ -70,4 +70,18 @@ public class LikeService {
                 .map(Like::getUser)
                 .toList();
     }
+
+    // Méthode pour vérifier si un utilisateur a liké un post
+    public boolean isPostLikedByUser(Long postId, Long userId) {
+        // Récupérer le post et l'utilisateur
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post with id " + postId + " not found"));
+
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User with id " + userId + " not found"));
+
+        // Vérifier si un like existe pour ce post et cet utilisateur
+        return likeRepository.findByPostAndUser(post, user).isPresent();
+    }
+
 }
