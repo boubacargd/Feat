@@ -36,10 +36,16 @@ public class PostService {
 
     // Récupérer tous les posts
     public List<PostDTO> getAllPosts() {
-        return postRepository.findAll().stream()
+        // Récupérer tous les posts de tous les utilisateurs, triés par date de création
+        List<Post> allPosts = postRepository.findAllByOrderByCreatedAtDesc();
+
+        // Convertir les posts en PostDTO
+        return allPosts.stream()
                 .map(PostDTO::new)
                 .collect(Collectors.toList());
     }
+
+
 
     private PostDTO convertToPostDTO(Post post) {
         // Créer et retourner un objet PostDTO

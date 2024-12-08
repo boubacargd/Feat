@@ -4,8 +4,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { PostModalOption } from "@/components/profile/post/PostModalOption";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { LikeUsersModal } from "@/components/profile/post/like/likeUsersModal";
-import colors from "@/constants/colors";
+import { LikeUsersModal } from "@/components/profile/post/like/LikeUsersModal";
 
 const { width } = Dimensions.get("window");
 
@@ -132,25 +131,26 @@ export default function PostDetails({ posts, isVisible, toggleModal }: PostCardP
             if (!token) {
                 throw new Error("Token d'authentification manquant");
             }
-
+    
             const response = await fetch(`http://localhost:8080/api/likes/users/${postId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
             });
-
+    
             if (!response.ok) {
                 throw new Error("Erreur lors de la récupération des utilisateurs ayant liké");
             }
-
+    
             const data = await response.json();
-            setUsersWhoLikedPost(data); // Update the state with the fetched users
-            setLikeUsersModalVisible(true); // Open the modal
+            console.log("Utilisateurs ayant liké :", data); // Test pour vérifier les données reçues
+            setUsersWhoLikedPost(data);
+            setLikeUsersModalVisible(true);
         } catch (error) {
             console.error("Erreur lors de la récupération des utilisateurs ayant liké :", error);
         }
     };
-
+    
 
     const handleFavorite = (index: number) => {
         const newFavorites = [...favoritedPosts];
@@ -238,12 +238,12 @@ export default function PostDetails({ posts, isVisible, toggleModal }: PostCardP
             <Modal visible={isVisible} animationType="slide" onRequestClose={toggleModal}>
                 <View style={styles.modalHeader}>
                     <TouchableOpacity onPress={toggleModal} style={{ justifyContent: "center", alignContent: "flex-end", left: 18 }}>
-                        <AntDesign name="down" size={24} color="black" />
+                        <AntDesign name="down" size={20} color="white" />
                     </TouchableOpacity>
 
                     <View style={styles.headerCenter}>
-                        <Text style={{ color: "black", fontWeight: "bold", fontSize: 20 }}>{posts[0]?.userName}</Text>
-                        <Text style={[styles.title, { color: "black" }]}>Post</Text>
+                        <Text style={{ color: "white", fontWeight: "bold", fontSize: 18 }}>{posts[0]?.userName}</Text>
+                        <Text style={[styles.title, { color: "white" }]}>Post</Text>
                     </View>
                 </View>
 
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
     modalHeader: {
         padding: 10,
         paddingTop: 60,
-        backgroundColor: "white",
+        backgroundColor: "black",
         flexDirection: "row",
         borderWidth: 0.2,
         borderBottomColor: "white",

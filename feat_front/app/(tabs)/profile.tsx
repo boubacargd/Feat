@@ -126,7 +126,7 @@ export default function Profile() {
 
                     <PostList posts={orderedPosts} />
                 </ScrollView>
-                <Text style={{ margin: "auto", color: "white", padding: 20, fontWeight: 700, }} onPress={handleLogout}>Logout</Text>
+                 <Text style={{ margin: "auto", color: "white", padding: 20, fontWeight: 700, }} onPress={handleLogout}>logout</Text>
                 <UserPostButton />
             </View>
         );
