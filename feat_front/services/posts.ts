@@ -34,7 +34,6 @@ export const fetchAllPosts = async (): Promise<Post[]> => {
 };
 
 
-// Fonction pour récupérer les données des likes
 export const fetchLikesData = async (postId: number) => {
     const token = await AsyncStorage.getItem('jwt_token');
     if (!token) {
@@ -51,7 +50,7 @@ export const fetchLikesData = async (postId: number) => {
                 Authorization: `Bearer ${token}`,
             },
         });
-
+        console.log("Token récupéré :", token);
         if (!likeCountResponse.ok) {
             console.error("Erreur HTTP:", likeCountResponse.status);
             return { likeCounts: [], likedPosts: [] };
@@ -61,6 +60,14 @@ export const fetchLikesData = async (postId: number) => {
         likeCountArr.push(likeCountData || 0);
 
         const userId = await AsyncStorage.getItem('userId');
+        
+        if (userId === null) {
+            console.error("ID utilisateur manquant");
+            return { likeCounts: [], likedPosts: [] };
+        }
+        console.log("User ID récupéré :", userId);
+        
+        
         const isLikedResponse = await fetch(`http://localhost:8080/api/likes/isLiked/${postId}/${userId}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -68,7 +75,7 @@ export const fetchLikesData = async (postId: number) => {
         });
 
         if (!isLikedResponse.ok) {
-            console.error("Erreur HTTP:", isLikedResponse.status);
+            console.error("Erreur HTTP fetchLikesData:", isLikedResponse.status);
             return { likeCounts: [], likedPosts: [] };
         }
 
@@ -80,6 +87,8 @@ export const fetchLikesData = async (postId: number) => {
 
     return { likeCounts: likeCountArr, likedPosts: likedPostArr };
 };
+
+
 
 // Fonction pour gérer les likes (ajouter ou supprimer un like)
 export const handleLike = async (

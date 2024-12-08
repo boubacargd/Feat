@@ -33,8 +33,19 @@ public class LikeController {
     }
 
     @GetMapping("/isLiked/{postId}/{userId}")
-    public boolean isPostLikedByUser(@PathVariable Long postId, @PathVariable Long userId) {
-        return likeService.isPostLikedByUser(postId, userId);
+    public boolean isPostLikedByUser(@PathVariable Long postId, @PathVariable String userId) {
+        if (userId == null || userId.equals("null") || userId.isEmpty()) {
+            throw new IllegalArgumentException("ID utilisateur manquant ou invalide");
+        }
+
+        try {
+            Long parsedUserId = Long.parseLong(userId);
+            return likeService.isPostLikedByUser(postId, parsedUserId);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("ID utilisateur invalide");
+        }
     }
+
+
 
 }

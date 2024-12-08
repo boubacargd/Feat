@@ -26,9 +26,9 @@ export default function TabLayout() {
         options={{
           tabBarIcon: ({ focused }: { focused: boolean }) =>
             focused ? (
-              <Ionicons name="home-sharp" size={28} color="white" />
+              <Ionicons name="home-sharp" size={24} color="white" />
             ) : (
-              <Ionicons name="home-outline" size={28} color="white" />
+              <Ionicons name="home-outline" size={24} color="white" />
             ),
             headerShown: false,
         }}
@@ -39,9 +39,9 @@ export default function TabLayout() {
         options={{
           tabBarIcon: ({ focused }: { focused: boolean }) =>
             focused ? (
-              <FontAwesome5 name="bars" size={28} color="white" />
+              <FontAwesome5 name="bars" size={24} color="white" />
             ) : (
-              <Octicons name="three-bars" size={28} color="white" />
+              <Octicons name="three-bars" size={24} color="white" />
             ),
         }}
       />
@@ -51,9 +51,9 @@ export default function TabLayout() {
         options={{
           tabBarIcon: ({ focused }: { focused: boolean }) =>
             focused ? (
-              <Ionicons name="chatbubble-sharp" size={28} color="white" />
+              <Ionicons name="chatbubble-sharp" size={24} color="white" />
             ) : (
-              <Ionicons name="chatbubble-outline" size={28} color="white" />
+              <Ionicons name="chatbubble-outline" size={24} color="white" />
             ),
         }}
       />
@@ -63,9 +63,9 @@ export default function TabLayout() {
         options={{
           tabBarIcon: ({ focused }: { focused: boolean }) =>
             focused ? (
-              <Ionicons name="person-sharp" size={28} color="white" />
+              <Ionicons name="person-sharp" size={24} color="white" />
             ) : (
-              <Ionicons name="person-outline" size={28} color="white" />
+              <Ionicons name="person-outline" size={24} color="white" />
             ),
           headerShown: false,
         }}

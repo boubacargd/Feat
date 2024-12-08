@@ -11,13 +11,16 @@ public class AppConfig {
 
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)  // Désactivation de CSRF (cela peut être géré de manière plus fine selon les besoins)
+                .csrf(AbstractHttpConfigurer::disable)  // Désactivation de CSRF (à ajuster selon les besoins)
                 .authorizeRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers(HttpMethod.POST, "/api/posts/create").authenticated()  // Autoriser les utilisateurs authentifiés pour certaines routes
-                                .requestMatchers("/**").permitAll()  // Permettre les autres requêtes publiques
+                                .requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()  // Par exemple pour les ressources publiques
+                                .requestMatchers(HttpMethod.POST, "/api/posts/create").authenticated()  // Créer des posts
+                                .requestMatchers(HttpMethod.GET, "/api/posts/**").authenticated() // Accès aux posts (en lecture)
+                                .requestMatchers("/**").permitAll()  // Permettre toutes les autres routes publiques
                 )
-                .build(); // Build l'objet HttpSecurity
+                .build(); // Construction de l'objet HttpSecurity
+
         return http.build();
     }
 }
