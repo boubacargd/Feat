@@ -104,7 +104,6 @@ export default function Login() {
 
             await AsyncStorage.setItem('jwt_token', token);
 
-            Alert.alert('Success', 'Login successful!');
             router.push('/profile');
         } catch (error) {
             if (axios.isAxiosError(error)) {

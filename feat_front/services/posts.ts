@@ -1,6 +1,7 @@
 //@service/posts.ts
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { jwtDecode } from "jwt-decode";
 
 export interface Post {
     id: number;
@@ -9,9 +10,6 @@ export interface Post {
     content: string;
     imageUrl: string[];
 }
-
-// Fonction pour récupérer tous les posts
-
 
 export const fetchAllPosts = async (): Promise<Post[]> => {
     try {
@@ -34,6 +32,8 @@ export const fetchAllPosts = async (): Promise<Post[]> => {
 };
 
 
+
+
 export const fetchLikesData = async (postId: number) => {
     const token = await AsyncStorage.getItem('jwt_token');
     if (!token) {
@@ -41,52 +41,41 @@ export const fetchLikesData = async (postId: number) => {
         return { likeCounts: [], likedPosts: [] };
     }
 
-    const likeCountArr: number[] = [];
-    const likedPostArr: boolean[] = [];
-
     try {
-        const likeCountResponse = await fetch(`http://localhost:8080/api/likes/count/${postId}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        console.log("Token récupéré :", token);
-        if (!likeCountResponse.ok) {
-            console.error("Erreur HTTP:", likeCountResponse.status);
-            return { likeCounts: [], likedPosts: [] };
+        const decodedToken: any = jwtDecode(token);
+        const userId = decodedToken?.userId || await AsyncStorage.getItem('userId');
+
+        if (!userId || isNaN(Number(userId))) {
+            throw new Error("ID utilisateur invalide ou manquant");
+        }
+
+        console.log("User ID récupéré :", userId);
+
+        // Récupérer le nombre de likes
+        const [likeCountResponse, isLikedResponse] = await Promise.all([
+            fetch(`http://localhost:8080/api/likes/count/${postId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            }),
+            fetch(`http://localhost:8080/api/likes/isLiked/${postId}/${userId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            }),
+        ]);
+
+        if (!likeCountResponse.ok || !isLikedResponse.ok) {
+            throw new Error(`Erreur HTTP: ${likeCountResponse.status}, ${isLikedResponse.status}`);
         }
 
         const likeCountData = await likeCountResponse.json();
-        likeCountArr.push(likeCountData || 0);
-
-        const userId = await AsyncStorage.getItem('userId');
-        
-        if (userId === null) {
-            console.error("ID utilisateur manquant");
-            return { likeCounts: [], likedPosts: [] };
-        }
-        console.log("User ID récupéré :", userId);
-        
-        
-        const isLikedResponse = await fetch(`http://localhost:8080/api/likes/isLiked/${postId}/${userId}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        if (!isLikedResponse.ok) {
-            console.error("Erreur HTTP fetchLikesData:", isLikedResponse.status);
-            return { likeCounts: [], likedPosts: [] };
-        }
-
         const isLikedData = await isLikedResponse.json();
-        likedPostArr.push(isLikedData || false);
+
+        return { likeCounts: [likeCountData || 0], likedPosts: [isLikedData || false] };
     } catch (error) {
         console.error("Erreur lors de la récupération des données de like:", error);
+        return { likeCounts: [], likedPosts: [] };
     }
-
-    return { likeCounts: likeCountArr, likedPosts: likedPostArr };
 };
+
+
 
 
 
@@ -103,46 +92,41 @@ export const handleLike = async (
     if (!token) return;
 
     try {
-        const userId = await AsyncStorage.getItem('userId'); // Assurez-vous que l'ID utilisateur est récupéré
+        const decodedToken: any = jwtDecode(token);
+        const userId = decodedToken?.userId || await AsyncStorage.getItem('userId');
 
-        // Envoyer une requête pour basculer le like
-        const likeResponse = await fetch(`http://localhost:8080/api/likes/toggle/${postId}/${userId}`, {
+        if (!userId) throw new Error("ID utilisateur manquant");
+
+        console.log(`Toggle like for post ${postId} by user ${userId}`);
+
+        const response = await fetch(`http://localhost:8080/api/likes/toggle/${postId}/${userId}`, {
             method: 'POST',
             headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (!likeResponse.ok) return;
+        if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
 
-        // Rechargement des données de like
-        const likeCountResponse = await fetch(`http://localhost:8080/api/likes/count/${postId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
+        // Recharger les données de like uniquement pour ce post
+        const { likeCounts, likedPosts } = await fetchLikesData(postId);
 
-        const isLikedResponse = await fetch(`http://localhost:8080/api/likes/isLiked/${postId}/${userId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!likeCountResponse.ok || !isLikedResponse.ok) return;
-
-        const likeCountData = await likeCountResponse.json();
-        const isLikedData = await isLikedResponse.json();
-
-        // Mise à jour des états des likes et des compteurs
+        // Mettre à jour les états locaux
         setLikeCounts((prev) => {
             const updated = [...prev];
-            updated[index] = likeCountData || 0;
+            updated[index] = likeCounts[0] || 0;
             return updated;
         });
 
         setLikedPosts((prev) => {
             const updated = [...prev];
-            updated[index] = isLikedData || false;
+            updated[index] = likedPosts[0] || false;
             return updated;
         });
     } catch (error) {
         console.error("Erreur lors de la gestion du like:", error);
     }
 };
+
+
 
 // Fonction pour récupérer les utilisateurs qui ont liké un post
 export const fetchUsersWhoLikedPost = async (postId: number): Promise<any[]> => {
@@ -168,5 +152,32 @@ export const fetchUsersWhoLikedPost = async (postId: number): Promise<any[]> => 
     } catch (error) {
         console.error("Erreur lors de la récupération des utilisateurs ayant liké:", error);
         return [];
+    }
+};
+
+export const fetchAllPostsWithLikes = async (): Promise<{ posts: Post[], likeCounts: number[] }> => {
+    try {
+        const token = await AsyncStorage.getItem('jwt_token');
+        if (!token) throw new Error("Token d'authentification manquant");
+
+        const response = await axios.get('http://localhost:8080/api/posts', {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const posts: Post[] = response.data;
+
+        // Récupérer les likes pour chaque post
+        const likeCountsPromises = posts.map(post =>
+            fetch(`http://localhost:8080/api/likes/count/${post.id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            }).then(res => (res.ok ? res.json() : 0))
+        );
+
+        const likeCounts = await Promise.all(likeCountsPromises);
+
+        return { posts, likeCounts };
+    } catch (error) {
+        console.error("Erreur lors de la récupération des posts avec likes:", error);
+        return { posts: [], likeCounts: [] };
     }
 };

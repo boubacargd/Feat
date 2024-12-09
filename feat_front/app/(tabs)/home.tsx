@@ -14,26 +14,33 @@ export default function Home() {
 
   useEffect(() => {
     const loadPosts = async () => {
-      try {
-        const postsData = await fetchAllPosts();
+        try {
+            const postsData = await fetchAllPosts(); // Récupérer tous les posts
+            setPosts(postsData);
 
-        setPosts(postsData);
+            const likeCountsArray: number[] = [];
+            const likedPostsArray: boolean[] = [];
 
-        setLikeCounts(new Array(postsData.length).fill(0));
-        setLikedPosts(new Array(postsData.length).fill(false));
-        setCurrentIndexes(new Array(postsData.length).fill(0));
+            // Récupérer les données des likes pour chaque post
+            for (const post of postsData) {
+                const { likeCounts, likedPosts } = await fetchLikesData(post.id);
+                likeCountsArray.push(likeCounts[0] || 0);
+                likedPostsArray.push(likedPosts[0] || false);
+            }
 
-        postsData.forEach((post) => {
-          fetchLikesData(post.id);
-        });
-        setLoading(false);
-      } catch (error) {
-        console.error("Erreur lors du chargement des posts", error);
-      }
+            setLikeCounts(likeCountsArray); // Mettre à jour les likes
+            setLikedPosts(likedPostsArray); // Mettre à jour l'état des likes
+
+            setCurrentIndexes(new Array(postsData.length).fill(0)); // Initialiser les index des images
+            setLoading(false); // Arrêter le chargement
+        } catch (error) {
+            console.error("Erreur lors du chargement des posts", error);
+        }
     };
 
     loadPosts();
-  }, []);
+}, []);
+
 
   const handleScroll = (index: number, contentOffsetX: number) => {
     const newIndexes = [...currentIndexes];
@@ -64,7 +71,7 @@ export default function Home() {
             <AntDesign
               name={likedPosts[index] ? "heart" : "hearto"}
               size={20}
-              color={likedPosts[index] ? "violet" : "white"}
+              color={likedPosts[index] ? "beige" : "white"}
               style={{ marginRight: 10 }}
             />
           </TouchableOpacity>
