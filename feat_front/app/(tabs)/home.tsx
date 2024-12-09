@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, Text, FlatList, TouchableOpacity, View, Image, Dimensions, ActivityIndicator, StyleSheet } from 'react-native';
+import { SafeAreaView, Text, FlatList, TouchableOpacity, View, Image, Dimensions, ActivityIndicator, TextInput, StyleSheet } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { fetchAllPosts, fetchLikesData, handleLike, Post } from '@/services/posts';
+import { fetchComments, addComment } from '@/services/commentService';
 
 const { width } = Dimensions.get('window');
 
@@ -11,6 +12,8 @@ export default function Home() {
   const [likeCounts, setLikeCounts] = useState<number[]>([]);
   const [likedPosts, setLikedPosts] = useState<boolean[]>([]);
   const [currentIndexes, setCurrentIndexes] = useState<number[]>([]);
+  const [comments, setComments] = useState<{ [key: number]: string[] }>({}); // Stockage des commentaires par post
+  const [newComment, setNewComment] = useState<string>(''); // Nouveau commentaire
 
   useEffect(() => {
     const loadPosts = async () => {
@@ -33,20 +36,41 @@ export default function Home() {
 
             setCurrentIndexes(new Array(postsData.length).fill(0)); // Initialiser les index des images
             setLoading(false); // Arrêter le chargement
+
+            // Charger les commentaires pour chaque post
+            const commentsData: { [key: number]: string[] } = {};
+            for (const post of postsData) {
+                const postComments = await fetchComments(post.id);
+                commentsData[post.id] = postComments.map((comment: any) => comment.content); // Stocker les commentaires
+            }
+            setComments(commentsData);
         } catch (error) {
-            console.error("Erreur lors du chargement des posts", error);
+            console.error("Erreur lors du chargement des posts ou des commentaires", error);
         }
     };
 
     loadPosts();
 }, []);
 
-
   const handleScroll = (index: number, contentOffsetX: number) => {
     const newIndexes = [...currentIndexes];
     const newIndex = Math.floor(contentOffsetX / width);
     newIndexes[index] = newIndex;
     setCurrentIndexes(newIndexes);
+  };
+
+  const handleAddComment = async (postId: number, commentContent: string) => {
+    if (!commentContent.trim()) return; // Ne pas envoyer de commentaire vide
+    try {
+      const newComment = await addComment(postId, commentContent, 1, 'UserName'); // Remplacer '1' et 'UserName' par l'ID et le nom de l'utilisateur
+      setComments(prevComments => ({
+        ...prevComments,
+        [postId]: [...prevComments[postId], newComment.content] // Ajouter le commentaire à l'état
+      }));
+      setNewComment(''); // Réinitialiser le champ de commentaire
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout du commentaire', error);
+    }
   };
 
   const renderItem = ({ item, index }: { item: Post; index: number }) => (
@@ -81,27 +105,35 @@ export default function Home() {
             <AntDesign name="message1" size={20} color="white" />
           </TouchableOpacity>
         </View>
-
-
-        <View style={{alignContent:"center", left:50}}>
-          <View style={styles.pagination}>
-            {item.imageUrl.map((_, imageIndex) => (
-              <View
-                key={imageIndex}
-                style={[
-                  styles.paginationDot,
-                  currentIndexes[index] === imageIndex && styles.activeDot,
-                ]}
-              />
-            ))}
-          </View>
-        </View>
-
       </View>
 
       <View style={styles.contentContainer}>
-        <Text style={{ fontWeight: "bold", color: "white" }}>{item.userName} </Text> 
+        <Text style={{ fontWeight: "bold", color: "white" }}>{item.userName} </Text>
         <Text style={{ color: "white" }}>{item.content}</Text>
+      </View>
+
+      <FlatList
+        data={comments[item.id] || []} // Utilisation des commentaires pour ce post
+        keyExtractor={(comment, index) => index.toString()}
+        renderItem={({ item: comment }) => (
+          <View style={styles.commentContainer}>
+            <Text style={styles.commentText}>{comment}</Text>
+          </View>
+        )}
+        style={styles.commentList}
+      />
+
+      <View style={styles.commentInputContainer}>
+        <TextInput
+          style={styles.commentInput}
+          placeholder="Ajouter un commentaire..."
+          placeholderTextColor="white"
+          value={newComment} // Afficher le commentaire actuel
+          onChangeText={setNewComment} // Mettre à jour l'état du commentaire
+        />
+        <TouchableOpacity onPress={() => handleAddComment(item.id, newComment)} style={styles.commentIcon}>
+          <AntDesign name="enter" size={24} color="white" />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -125,7 +157,6 @@ export default function Home() {
 const styles = StyleSheet.create({
   postContainer: {
     marginBottom: 50,
-
   },
   header: {
     flexDirection: 'row',
@@ -158,54 +189,37 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  pagination: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 5,
-  },
-  paginationDot: {
-    width: 5,
-    height: 5,
-    margin: 3,
-    borderRadius: 4,
-    backgroundColor: "#fff",
-  },
-  activeDot: {
-    backgroundColor: 'red',
-  },
   contentContainer: {
     paddingHorizontal: 10,
     paddingVertical: 5,
-    display:"flex",
-    flexDirection:"row"
+    display: "flex",
+    flexDirection: "row"
   },
-  contentText: {
+  commentContainer: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  commentText: {
     color: 'white',
     fontSize: 14,
   },
-  headerCenter: {
-    flex: 1,
-    alignItems: 'center',
-    right: 15,
+  commentList: {
+    marginTop: 10,
   },
-  modalHeader: {
+  commentInput: {
+    backgroundColor: '#333',
+    color: 'white',
     padding: 10,
-    paddingTop: 60,
-    backgroundColor: "black",
-    flexDirection: "row",
-    borderWidth: 0.2,
-    borderBottomColor: "white",
-    display: "flex",
+    margin: 10,
+    borderRadius: 5,
+    flex: 1,
   },
-  flatListContent: {
-    padding: 0,
+  commentInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
   },
-  flatListStyle: {
-    width: width,
-    backgroundColor: "black",
-  },
-  title: {
-    fontSize: 14,
-    color: "white",
+  commentIcon: {
+    marginLeft: 10,
   },
 });
