@@ -15,7 +15,7 @@ export default function TabLayout() {
         tabBarStyle: {
           height: 60, // Ajuste la hauteur de la tabBar si nécessaire
           width: width,
-          backgroundColor: 'black', // Assure-toi que la couleur de fond soit transparente
+          backgroundColor:"#1f1f1f",
           borderTopWidth: 0, // Supprime la bordure supérieure
         },
      

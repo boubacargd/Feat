@@ -49,3 +49,24 @@ export const addComment = async (postId: number, content: string, userId: number
     throw error;
   }
 };
+
+
+// Fonction pour supprimer un commentaire
+export const deleteComment = async (commentId: number) => {
+    try {
+      const token = await AsyncStorage.getItem('jwt_token');
+      if (!token) {
+        throw new Error("Token d'authentification manquant");
+      }
+  
+      await axios.delete(`http://localhost:8080/api/comments/${commentId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (error) {
+      console.error("Erreur lors de la suppression du commentaire", error);
+      throw error;
+    }
+  };
+  

@@ -49,8 +49,6 @@ export const fetchLikesData = async (postId: number) => {
             throw new Error("ID utilisateur invalide ou manquant");
         }
 
-        console.log("User ID récupéré :", userId);
-
         // Récupérer le nombre de likes
         const [likeCountResponse, isLikedResponse] = await Promise.all([
             fetch(`http://localhost:8080/api/likes/count/${postId}`, {

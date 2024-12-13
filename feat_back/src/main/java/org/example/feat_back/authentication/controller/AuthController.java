@@ -45,7 +45,6 @@ public class AuthController {
     @PostMapping("/signin")
     public ResponseEntity<String> signin(@RequestBody UserCredential userCredential) {
 
-
         // Valider les entrées
         if (userCredential.email() == null || userCredential.password() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email and password must not be null.");
@@ -72,7 +71,8 @@ public class AuthController {
 
                 // Utiliser l'email de l'utilisateur pour le sujet du JWT
                 String jwtToken = Jwts.builder()
-                        .setSubject(userDTO.getEmail()) // Utilise l'email dans le sub
+                        .setSubject(userDTO.getEmail())
+                        .claim("userId", userDTO.getId()) // Utilise l'ID récupéré via getUserByEmail
                         .claim("email", userDTO.getEmail()) // Inclure l'email comme claim
                         .setIssuedAt(now) // Optionnel : ajoutez la date d'émission
                         .setExpiration(expiryDate) // Ajouter une date d'expiration

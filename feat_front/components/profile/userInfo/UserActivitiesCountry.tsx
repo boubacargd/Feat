@@ -11,12 +11,11 @@ interface UserActivitiesCountryProps {
 }
 
 export default function UserActivitiesCountry({ country, activities }: UserActivitiesCountryProps) {
-    // Conversion du nom du pays en code ISO
+
     const countryCode = getCode(country);  // Cela renvoie le code ISO à deux lettres, ou undefined si le pays est introuvable
 
     return (
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingLeft: 10 }}>
-            {/* Affichage du texte des activités et du pays */}
             <Text style={{ fontSize: 12, color: "white", fontWeight: 700 }}>
                 {activities || ''},{" "}{country || ''}
             </Text>

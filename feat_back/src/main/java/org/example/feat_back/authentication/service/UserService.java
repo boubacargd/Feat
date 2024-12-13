@@ -8,6 +8,7 @@ import java.util.Optional;
 
 public interface UserService {
     UserDTO getUserByEmail(String email);
+
     Optional<UserDTO> findById(Long id);
     void updateProfileImage(String email, String imagePath);
 

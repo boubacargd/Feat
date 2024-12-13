@@ -14,11 +14,9 @@ interface UserImageNameProps {
 export default function UserImageName({ name, country, activities, imageUrl }: UserImageNameProps) {
     const scrollY = useRef(new Animated.Value(0)).current;
 
-    const HEADER_HEIGHT = 70; // Hauteur du header fixe
-
+    const HEADER_HEIGHT = 70; 
     return (
         <View style={{ flex: 1, backgroundColor: 'black' }}>
-            {/* Header animé */}
             <Animated.View
                 style={[
                     styles.header,
@@ -48,7 +46,6 @@ export default function UserImageName({ name, country, activities, imageUrl }: U
                 </Animated.Text>
             </Animated.View>
 
-            {/* Contenu principal */}
             <Animated.ScrollView
                 contentContainerStyle={{ paddingBottom: 0 }}
                 onScroll={Animated.event(
@@ -57,7 +54,6 @@ export default function UserImageName({ name, country, activities, imageUrl }: U
                 )}
                 scrollEventThrottle={16}
             >
-                {/* Image avec le texte */}
                 <View style={{ position: 'relative' }}>
                     <Image
                         source={{ uri: imageUrl }}
@@ -76,7 +72,6 @@ export default function UserImageName({ name, country, activities, imageUrl }: U
                             height: 100, // Hauteur du dégradé
                         }}
                     />
-                    {/* Texte sur l'image */}
                     <Animated.View
                         style={{
                             position: 'absolute',

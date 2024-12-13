@@ -8,7 +8,7 @@ export function ProjectsCollabsBtn() {
 
     return (
         <View style={styles.containerPojectsCollabsBtn}>
-            {/* Bouton Projects */}
+
             <TouchableOpacity
                 style={[
                     styles.buttonProjectsCollabs,
@@ -26,7 +26,6 @@ export function ProjectsCollabsBtn() {
                 </Text>
             </TouchableOpacity>
 
-            {/* Bouton Collabs */}
             <TouchableOpacity
                 style={[
                     styles.buttonProjectsCollabs,

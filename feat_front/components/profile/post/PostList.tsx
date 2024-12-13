@@ -55,7 +55,6 @@ export function PostList({ posts }: PostListProps) {
                 />
             </ScrollView>
 
-            {/* Affichage de la modale avec tous les posts */}
             <PostDetails
                 posts={posts}
                 isVisible={isModalVisible}
