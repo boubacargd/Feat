@@ -18,7 +18,8 @@ public class CommentController {
     // Récupérer les commentaires d'un post
     @GetMapping("/{postId}")
     public ResponseEntity<List<CommentDTO>> getComments(@PathVariable Long postId) {
-        return ResponseEntity.ok(commentService.getCommentsByPostId(postId));
+        List<CommentDTO> comments = commentService.getCommentsByPostId(postId);
+        return ResponseEntity.ok(comments);
     }
 
     // Ajouter un commentaire
@@ -26,7 +27,10 @@ public class CommentController {
     public ResponseEntity<CommentDTO> addComment(
             @PathVariable Long postId,
             @RequestBody CommentDTO commentDto) {
-        return ResponseEntity.ok(commentService.addComment(postId, commentDto));
+        // Vérifier que le commentDto contient bien le postId
+        commentDto.setPostId(postId); // Assurez-vous que postId est bien associé au commentaire
+        CommentDTO savedComment = commentService.addComment(postId, commentDto);
+        return ResponseEntity.ok(savedComment);
     }
 
     // Supprimer un commentaire

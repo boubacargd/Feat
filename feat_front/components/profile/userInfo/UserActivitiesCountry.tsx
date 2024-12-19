@@ -1,18 +1,18 @@
 import React from 'react';
 import { View, Text, Dimensions } from 'react-native';
-import CountryFlag from 'react-native-country-flag';  // Importer la bibliothèque
-import { getCode } from 'country-list'; // Importer la fonction de conversion
+import CountryFlag from 'react-native-country-flag';  
+import { getCode } from 'country-list'; 
 
 const { width } = Dimensions.get("window");
 
 interface UserActivitiesCountryProps {
-    country: string;  // Le nom complet du pays, par exemple 'France'
+    country: string; 
     activities: string;
 }
 
 export default function UserActivitiesCountry({ country, activities }: UserActivitiesCountryProps) {
 
-    const countryCode = getCode(country);  // Cela renvoie le code ISO à deux lettres, ou undefined si le pays est introuvable
+    const countryCode = getCode(country); 
 
     return (
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingLeft: 10 }}>

@@ -253,23 +253,24 @@ const useStyles = () => {
             borderRadius: 5, 
         },
         modalContainer: {
-            flex: 1,
-            backgroundColor: "rgba(0,0,0,0.5)", // Fond semi-transparent
-            justifyContent: "center",
-            alignItems: "center",
+            width:"100%",
+            maxHeight:"75%",
+            position:"absolute",
             bottom:0,
             
         },
         modalContent: {
             width: "100%",
             height:"70%",
-            backgroundColor: "#fff",
+            backgroundColor: "red",
             borderRadius: 10,
             padding: 10,
             bottom:0,
             position:"absolute"
         },
         closeButton: {
+            position:"absolute",
+            top:0,
             alignSelf: "flex-end",
             padding: 10,
         },

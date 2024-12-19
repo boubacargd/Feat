@@ -157,7 +157,6 @@ export default function AddImageProfile() {
                             <Text style={[styles.textH3Bold, themeButtonTextColor]}>{i18n.t("infoUser.confirmImg")}</Text>
                         </TouchableOpacity>
                     )}
-                    {/* Bouton pour choisir ou modifier l'image */}
                     <TouchableOpacity
                         style={[styles.button, themeBackgroundColorBtn]}
                         onPress={pickImage}>
@@ -166,10 +165,6 @@ export default function AddImageProfile() {
                         </Text>
                     </TouchableOpacity>
 
-                    {/* Bouton pour confirmer l'image choisie */}
-
-
-                    {/* Bouton pour sauter */}
                     <TouchableOpacity style={[styles.button]} onPress={handleSkip}>
                         <Text style={[styles.textH3Bold, themeTextStyle]}>{i18n.t("infoUser.skip")}</Text>
                     </TouchableOpacity>

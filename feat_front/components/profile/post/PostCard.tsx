@@ -18,10 +18,10 @@ type PostCardProps = {
 export function PostCard({ post }: PostCardProps) {
     if (!post) {
         console.error("Erreur: Le post est vide ou non défini");
-        return null; // Évite de rendre un composant si les données sont manquantes
+        return null; 
     }
 
-    const randomImage = post.imageUrl[0]; // Utilise toujours la première image pour simplifier
+    const randomImage = post.imageUrl[0]; 
 
     return (
         <View style={styles.postCard}>

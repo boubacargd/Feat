@@ -74,6 +74,7 @@ public class AuthController {
                         .setSubject(userDTO.getEmail())
                         .claim("userId", userDTO.getId()) // Utilise l'ID récupéré via getUserByEmail
                         .claim("email", userDTO.getEmail()) // Inclure l'email comme claim
+                        .claim("userName", userDTO.getFirstName() + " " + userDTO.getLastName() )
                         .setIssuedAt(now) // Optionnel : ajoutez la date d'émission
                         .setExpiration(expiryDate) // Ajouter une date d'expiration
                         .signWith(secretKey, SignatureAlgorithm.HS256)

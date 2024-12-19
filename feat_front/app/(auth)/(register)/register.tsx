@@ -169,7 +169,7 @@ export default function register() {
                                 placeholder="example@gmail.com"
                                 placeholderTextColor="#6a6a6a"
                                 value={email}
-                                onChangeText={(text) => setEmail(text.toLowerCase())}
+                                onChangeText={(text) => setEmail(text ? text.toLowerCase() : '')}
                                 style={styles.authInput}
                             />
                             <View style={styles.navForm}>

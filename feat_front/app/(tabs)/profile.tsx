@@ -19,7 +19,7 @@ export default function Profile() {
 
     const [userInfo, setUserInfo] = useState<{ name: string; country: string; activities: string, imageUrl: string } | null>(null);
     const [loading, setLoading] = useState(true);
-    const [orderedPosts, setOrderedPosts] = useState<any[]>([]); // Posts triés
+    const [orderedPosts, setOrderedPosts] = useState<any[]>([]); 
 
     useEffect(() => {
         const checkToken = async () => {
@@ -31,8 +31,8 @@ export default function Profile() {
             }
 
             if (isValidJWT(token)) {
-                await fetchUserInfo(token); // Récupère uniquement les infos utilisateur
-                await fetchOrderedPosts(token); // Appel pour les posts triés
+                await fetchUserInfo(token); 
+                await fetchOrderedPosts(token); 
             } else {
                 router.push("/login");
             }
@@ -81,7 +81,7 @@ export default function Profile() {
                 },
             });
             console.log("Posts triés récupérés:", response.data);
-            setOrderedPosts(response.data); // Mettez à jour l'état des posts triés
+            setOrderedPosts(response.data); 
         } catch (error) {
             console.error("Erreur lors de la récupération des posts triés:", error);
         }

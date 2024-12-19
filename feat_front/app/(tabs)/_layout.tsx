@@ -13,10 +13,10 @@ export default function TabLayout() {
         tabBarShowLabel: false,
         headerShown: false,
         tabBarStyle: {
-          height: 60, // Ajuste la hauteur de la tabBar si nécessaire
+          height: 60, 
           width: width,
           backgroundColor:"#1f1f1f",
-          borderTopWidth: 0, // Supprime la bordure supérieure
+          borderTopWidth: 0,
         },
      
       }}
