@@ -12,6 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
@@ -21,14 +26,12 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/profile")
-    public ResponseEntity<?> getUserProfile(@RequestParam String email) {
-        // Log pour vérifier l'email reçu
+    public ResponseEntity<?> getUserProfileByEmail(@RequestParam String email) {
         logger.debug("Email reçu pour récupérer les détails de l'utilisateur: {}", email);
 
         // Récupérer l'utilisateur par email
         UserDTO userDTO = userService.getUserByEmail(email);
 
-        // Log si utilisateur non trouvé
         if (userDTO == null) {
             logger.warn("Utilisateur non trouvé pour l'email: {}", email);
             return ResponseEntity
@@ -36,10 +39,37 @@ public class UserController {
                     .body("User not found with email: " + email);
         }
 
-        // Log pour afficher les détails de l'utilisateur récupéré
         logger.info("Utilisateur trouvé: {}", userDTO);
-
         return ResponseEntity.ok(userDTO);
     }
 
+    @GetMapping("/profileById")
+    public ResponseEntity<?> getUserProfileById(@RequestParam String id) {
+        try {
+            // Convertir l'ID en Long (un ou plusieurs IDs séparés par des virgules)
+            String[] ids = id.split(",");
+            List<Long> userIds = Arrays.stream(ids)
+                    .map(Long::parseLong)
+                    .collect(Collectors.toList());
+
+            // Récupérer les utilisateurs par IDs
+            List<UserDTO> userDTOs = userService.getUsersByIds(userIds);
+
+            if (userDTOs.isEmpty()) {
+                logger.warn("Aucun utilisateur trouvé pour les IDs: {}", id);
+                return ResponseEntity
+                        .status(HttpStatus.NOT_FOUND)
+                        .body("No users found for IDs: " + id);
+            }
+
+            logger.info("Utilisateurs trouvés pour les IDs: {}", userDTOs);
+            return ResponseEntity.ok(userDTOs);
+
+        } catch (NumberFormatException e) {
+            logger.error("IDs invalides: {}", id, e);
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Invalid user ID format.");
+        }
+    }
 }

@@ -8,7 +8,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -42,14 +44,23 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<UserDTO> findById(Long id) {
+    public UserDTO getUserById(Long id) {
         Optional<UserEntity> userEntityOptional = userRepository.findById(id);
         if (userEntityOptional.isPresent()) {
             UserEntity userEntity = userEntityOptional.get();
-            return Optional.of(new UserDTO(userEntity)); // Retourner un UserDTO encapsulé dans un Optional
+            return new UserDTO(userEntity);  // Retourne un UserDTO
         }
-        return Optional.empty(); // Si l'utilisateur n'est pas trouvé
+        return null;  // Retourne null si l'utilisateur n'est pas trouvé
     }
+
+    @Override
+    public List<UserDTO> getUsersByIds(List<Long> userIds) {
+        List<UserEntity> userEntities = userRepository.findAllById(userIds);
+        return userEntities.stream()
+                .map(userEntity -> new UserDTO(userEntity))
+                .collect(Collectors.toList());
+    }
+
 
     @Override
     public void updateProfileImage(String email, String imagePath) {

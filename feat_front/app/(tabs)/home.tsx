@@ -2,21 +2,21 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView, Text, FlatList, TouchableOpacity, View, Image, Dimensions, ActivityIndicator, TextInput, StyleSheet, Modal } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { fetchAllPosts, fetchLikesData, handleLike, Post } from '@/services/posts';
-import { fetchComments, addComment } from '@/services/commentService'; // Assurez-vous d'ajouter la fonction addComment
+import { fetchComments, addComment, fetchMultipleUserDetails } from '@/services/commentService'; // Assurez-vous d'ajouter la fonction addComment
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { jwtDecode } from "jwt-decode";
-
 const { width } = Dimensions.get('window');
 
 export default function Home() {
+
+
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [likeCounts, setLikeCounts] = useState<number[]>([]);
   const [likedPosts, setLikedPosts] = useState<boolean[]>([]);
   const [comments, setComments] = useState<{ [key: number]: string[] }>({});
-  const [userDetails, setUserDetails] = useState<{ [key: string]: any }>({});  // Store user details
-  const [newComment, setNewComment] = useState<string>('');
+  const [userDetails, setUserDetails] = useState<{ [userId: number]: { firstName: string; lastName: string } }>({}); const [newComment, setNewComment] = useState<string>('');
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
@@ -36,84 +36,82 @@ export default function Home() {
     const loadData = async () => {
       try {
         const postsData = await fetchAllPosts();
-        setPosts(postsData);
-  
+        console.log("Posts récupérés:", postsData);
+
         const commentsData: { [key: number]: string[] } = {};
         const likeCountsArray: number[] = [];
         const likedPostsArray: boolean[] = [];
-        
-        // Fetch user details for comments
-        const userDetailsData: { [key: string]: any } = {};
-  
+
+        const userIds: Set<number> = new Set();  // Utilise un Set pour collecter les `userId` uniques
+
         for (const post of postsData) {
           const postComments = await fetchComments(post.id);
+          console.log("Commentaires pour le post:", post.id, postComments);
+
           commentsData[post.id] = postComments.map((comment: any) => comment.content);
-  
+
           const { likeCounts, likedPosts } = await fetchLikesData(post.id);
           likeCountsArray.push(likeCounts[0] || 0);
           likedPostsArray.push(likedPosts[0] || false);
-  
-          // Fetch user details for each comment
-          for (const comment of postComments) {
-            const userEmail = comment.userEmail;  // Assuming the comment object has `userEmail`
-            
-            // Log the user email being fetched
-            console.log("Fetching details for user with email:", userEmail);
-  
-            if (userEmail && !userDetailsData[userEmail]) {
-              const userInfo = await fetchUserDetails(userEmail);
-              
-              // Log the user info received
-              console.log("Utilisateur récupéré:", userInfo);
-  
-              userDetailsData[userEmail] = userInfo;
+
+          // Collecte tous les `userId` des commentaires
+          postComments.forEach((comment: any) => {
+            if (comment.userId) {
+              userIds.add(comment.userId);
             }
-          }
+          });
         }
-  
+
+        // Récupère les détails des utilisateurs en une seule requête
+        const userDetails = await fetchMultipleUserDetails(Array.from(userIds));
+        console.log("Tous les détails des utilisateurs:", userDetails);
+
         setComments(commentsData);
         setLikeCounts(likeCountsArray);
         setLikedPosts(likedPostsArray);
-        setUserDetails(userDetailsData);
+        setUserDetails(userDetails);  // Mets à jour l'état avec les détails des utilisateurs
         setLoading(false);
       } catch (error) {
         console.error("Erreur lors du chargement des posts, commentaires ou likes", error);
       }
     };
-  
+
     loadData();
   }, []);
-    
+
 
   const handleAddComment = async (commentContent: string) => {
     if (!commentContent.trim()) return;
+
     const token = await AsyncStorage.getItem('jwt_token');
-  
+    if (!token) {
+      console.error("Token JWT non trouvé");
+      return;
+    }
+
     try {
       const decodedToken: any = jwtDecode(token);
       const userId = decodedToken?.userId || await AsyncStorage.getItem('userId');
-      const userName = decodedToken?.userName || await AsyncStorage.getItem('userName');
-  
-      if (!userId || !userName || !selectedPostId) {
-        console.error("User ID, UserName ou Post ID manquants");
+      const userName = `${decodedToken?.firstName || ''} ${decodedToken?.lastName || ''}`;
+
+      if (!userId || !selectedPostId) {
+        console.error("User ID ou Post ID manquants");
         return;
       }
-  
-      const newComment = await addComment(selectedPostId, commentContent, parseInt(userId, 10), userName);
-  
-      setComments((prevComments) => {
-        const updatedComments = { ...prevComments };
-        if (!updatedComments[selectedPostId]) {
-          updatedComments[selectedPostId] = [];
-        }
-        updatedComments[selectedPostId].push(newComment.content);
-        return updatedComments;
-      });
+
+      const newComment: Comment = await addComment(selectedPostId, commentContent, parseInt(userId, 10), userName);
+
+      setComments((prevComments) => ({
+        ...prevComments,
+        [selectedPostId]: [...(prevComments[selectedPostId] || []), newComment],
+      }));
       setNewComment('');
     } catch (error) {
       console.error("Erreur lors de l'ajout du commentaire", error);
     }
   };
+
+
 
   const renderItem = ({ item, index }: { item: Post; index: number }) => (
     <View style={styles.postContainer}>
@@ -158,32 +156,31 @@ export default function Home() {
           onPress={closeModal}
           style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
         />
-        <View style={[styles.modalContainer, {backgroundColor:'black', height:550}]}>
-          <View style={{display:"flex", justifyContent:"center", alignItems:"center", padding:10, paddingTop:10, borderBottomColor:"grey", borderWidth:0.2, width:"100%" }}>
-            <Text style={{color:"white"}} >Comments</Text>
+        <View style={[{ backgroundColor: 'black', height: 550 }]}>
+          <View style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: 10, paddingTop: 10, borderBottomColor: "grey", borderWidth: 0.2, width: "100%" }}>
+            <Text style={{ color: "white" }} >Comments</Text>
           </View>
 
           <FlatList
-              data={comments[item.id] || []}  // Utilise l'ID du post pour afficher les commentaires
-              keyExtractor={(_, index) => index.toString()}
-              renderItem={({ item: comment, index }) => {
-                const userDetail = userDetails[comment.userEmail];  // Get user details for this comment
+            data={comments[item.id] || []}
+            keyExtractor={(comment, index) => index.toString()}
+            renderItem={({ item: comment }) => {
+              const userDetail = userDetails[comment.userId]; // Basé sur `userId`
+              return (
+                <View style={styles.commentContainer}>
+                  <Text style={styles.commentText}>
+                    <Text style={{ fontWeight: 'bold' }}>
+                      {userDetail
+                        ? `${userDetail.firstName} ${userDetail.lastName}`
+                        : 'Utilisateur inconnu'}:
+                    </Text>{' '}
+                    {comment.content}
+                  </Text>
+                </View>
+              );
+            }}
+          />
 
-                // Log to verify user details
-                console.log("Détails de l'utilisateur pour ce commentaire:", userDetail);
-
-                return (
-                  <View style={styles.commentContainer}>
-                    <Text style={styles.commentText}>
-                      <Text style={{ fontWeight: 'bold' }}>
-                        {userDetail ? userDetail.name : 'Unknown'}:
-                      </Text>
-                      {' '}{comment.content}
-                    </Text>
-                  </View>
-                );
-              }}
-            />
 
           <View style={styles.commentInputContainer}>
             <TextInput
@@ -206,7 +203,7 @@ export default function Home() {
   );
 
   if (loading) {
-    return <ActivityIndicator size="large" color="white" />;
+    return <ActivityIndicator size="large" color="black" style={{ margin: "auto" }} />;
   }
 
   return (
@@ -290,9 +287,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 30,
-    borderTopColor:"grey",
-    borderTopWidth:1,
-    paddingTop:10
+    borderTopColor: "grey",
+    borderTopWidth: 1,
+    paddingTop: 10
   },
   commentIcon: {
     marginLeft: 10,
