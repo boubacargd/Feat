@@ -45,31 +45,29 @@ public class UserController {
 
     @GetMapping("/profileById")
     public ResponseEntity<?> getUserProfileById(@RequestParam String id) {
+        logger.debug("IDs reçus pour récupérer les profils : {}", id);
+
         try {
-            // Convertir l'ID en Long (un ou plusieurs IDs séparés par des virgules)
-            String[] ids = id.split(",");
-            List<Long> userIds = Arrays.stream(ids)
+            List<Long> userIds = Arrays.stream(id.split(","))
                     .map(Long::parseLong)
                     .collect(Collectors.toList());
+            logger.debug("Conversion des IDs en Long : {}", userIds);
 
-            // Récupérer les utilisateurs par IDs
             List<UserDTO> userDTOs = userService.getUsersByIds(userIds);
+            List<UserDTO> userDTO = userService.getUsersByIds(userIds);
 
             if (userDTOs.isEmpty()) {
-                logger.warn("Aucun utilisateur trouvé pour les IDs: {}", id);
-                return ResponseEntity
-                        .status(HttpStatus.NOT_FOUND)
-                        .body("No users found for IDs: " + id);
+                logger.warn("Aucun utilisateur trouvé pour les IDs : {}", id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No users found for IDs: " + id);
             }
 
-            logger.info("Utilisateurs trouvés pour les IDs: {}", userDTOs);
+            logger.info("Utilisateurs trouvés : {}", userDTOs);
             return ResponseEntity.ok(userDTOs);
 
         } catch (NumberFormatException e) {
-            logger.error("IDs invalides: {}", id, e);
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body("Invalid user ID format.");
+            logger.error("Format d'ID invalide : {}", id, e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid user ID format.");
         }
     }
+
 }

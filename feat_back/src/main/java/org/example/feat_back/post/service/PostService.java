@@ -20,6 +20,7 @@ public class PostService {
     public PostDTO createPost(PostDTO postDTO, UserEntity user) {
         Post post = new Post();
         post.setContent(postDTO.getContent());
+        ;
         post.setImageUrls(postDTO.getImageUrl());
         post.setUser(user);
 

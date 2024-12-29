@@ -1,24 +1,61 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, Text, FlatList, TouchableOpacity, View, Image, Dimensions, ActivityIndicator, TextInput, StyleSheet, Modal } from 'react-native';
+import {
+  SafeAreaView,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  View,
+  Image,
+  Dimensions,
+  ActivityIndicator,
+  TextInput,
+  StyleSheet,
+  Modal,
+} from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
-import { fetchAllPosts, fetchLikesData, handleLike, Post } from '@/services/posts';
-import { fetchComments, addComment, fetchMultipleUserDetails } from '@/services/commentService'; // Assurez-vous d'ajouter la fonction addComment
+import { fetchAllPosts, fetchLikesData, handleLike } from '@/services/posts';
+import {
+  fetchComments,
+  addComment,
+  fetchMultipleUserDetails,
+} from '@/services/commentService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode } from 'jwt-decode';
+
 const { width } = Dimensions.get('window');
 
+type Post = {
+  id: number;
+  content: string;
+  userName: string;
+  userImageUrl: string;
+  imageUrl: string[];
+};
+
+type Comment = {
+  id: number;
+  postId: number;
+  userId: number;
+  userName: string;
+  content: string;
+  createdAt: string;
+};
+
+type UserDetails = {
+  firstName: string;
+  lastName: string;
+};
+
 export default function Home() {
-
-
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [likeCounts, setLikeCounts] = useState<number[]>([]);
   const [likedPosts, setLikedPosts] = useState<boolean[]>([]);
-  const [comments, setComments] = useState<{ [key: number]: string[] }>({});
-  const [userDetails, setUserDetails] = useState<{ [userId: number]: { firstName: string; lastName: string } }>({}); const [newComment, setNewComment] = useState<string>('');
+  const [comments, setComments] = useState<{ [key: number]: Comment[] }>({});
+  const [userDetails, setUserDetails] = useState<{ [userId: number]: UserDetails }>({});
+  const [newComment, setNewComment] = useState<string>('');
   const [isModalVisible, setIsModalVisible] = useState(false);
-
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
 
   const openModal = (postId: number) => {
@@ -36,25 +73,31 @@ export default function Home() {
     const loadData = async () => {
       try {
         const postsData = await fetchAllPosts();
-        console.log("Posts récupérés:", postsData);
+        console.log('Posts récupérés:', postsData);
 
-        const commentsData: { [key: number]: string[] } = {};
+        const commentsData: { [key: number]: Comment[] } = {};
         const likeCountsArray: number[] = [];
         const likedPostsArray: boolean[] = [];
 
-        const userIds: Set<number> = new Set();  // Utilise un Set pour collecter les `userId` uniques
+        const userIds: Set<number> = new Set();
 
         for (const post of postsData) {
           const postComments = await fetchComments(post.id);
-          console.log("Commentaires pour le post:", post.id, postComments);
-
-          commentsData[post.id] = postComments.map((comment: any) => comment.content);
+          /*           console.log('Commentaires pour le post:', post.id, postsData);
+           */
+          commentsData[post.id] = postComments.map((comment: any) => ({
+            id: comment.id,
+            postId: comment.postId,
+            userId: comment.userId,
+            userName: comment.userName,
+            content: comment.content,
+            createdAt: comment.createdAt,
+          }));
 
           const { likeCounts, likedPosts } = await fetchLikesData(post.id);
           likeCountsArray.push(likeCounts[0] || 0);
           likedPostsArray.push(likedPosts[0] || false);
 
-          // Collecte tous les `userId` des commentaires
           postComments.forEach((comment: any) => {
             if (comment.userId) {
               userIds.add(comment.userId);
@@ -62,56 +105,61 @@ export default function Home() {
           });
         }
 
-        // Récupère les détails des utilisateurs en une seule requête
         const userDetails = await fetchMultipleUserDetails(Array.from(userIds));
-        console.log("Tous les détails des utilisateurs:", userDetails);
-
+        /*         console.log('Tous les détails des utilisateurs:', userDetails);
+         */
+        setPosts(postsData);
         setComments(commentsData);
         setLikeCounts(likeCountsArray);
         setLikedPosts(likedPostsArray);
-        setUserDetails(userDetails);  // Mets à jour l'état avec les détails des utilisateurs
+        setUserDetails(userDetails);
         setLoading(false);
       } catch (error) {
-        console.error("Erreur lors du chargement des posts, commentaires ou likes", error);
+        console.error('Erreur lors du chargement des posts, commentaires ou likes', error);
       }
     };
 
     loadData();
   }, []);
 
-
   const handleAddComment = async (commentContent: string) => {
     if (!commentContent.trim()) return;
 
     const token = await AsyncStorage.getItem('jwt_token');
     if (!token) {
-      console.error("Token JWT non trouvé");
+      console.error('Token JWT non trouvé');
       return;
     }
 
     try {
       const decodedToken: any = jwtDecode(token);
       const userId = decodedToken?.userId || await AsyncStorage.getItem('userId');
-      const userName = `${decodedToken?.firstName || ''} ${decodedToken?.lastName || ''}`;
+      const userName = `${decodedToken?.firstName || ''} ${decodedToken?.lastName || ''}`.trim();
 
       if (!userId || !selectedPostId) {
-        console.error("User ID ou Post ID manquants");
+        console.error('User ID ou Post ID manquants');
         return;
       }
 
-      const newComment: Comment = await addComment(selectedPostId, commentContent, parseInt(userId, 10), userName);
+      const newComment: Comment = {
+        id: Date.now(),
+        postId: selectedPostId,
+        userId: parseInt(userId, 10),
+        userName,
+        content: commentContent,
+        createdAt: new Date().toISOString(),
+      };
 
       setComments((prevComments) => ({
         ...prevComments,
-        [selectedPostId]: [...(prevComments[selectedPostId] || []), newComment],
+        [selectedPostId!]: [...(prevComments[selectedPostId!] || []), newComment],
       }));
+
       setNewComment('');
     } catch (error) {
-      console.error("Erreur lors de l'ajout du commentaire", error);
+      console.error('Erreur lors de l\'ajout du commentaire', error);
     }
   };
-
-
 
   const renderItem = ({ item, index }: { item: Post; index: number }) => (
     <View style={styles.postContainer}>
@@ -124,16 +172,34 @@ export default function Home() {
         data={item.imageUrl}
         horizontal
         keyExtractor={(url) => url}
-        renderItem={({ item: image }) => <Image source={{ uri: image }} style={styles.mainImage} />}
+        renderItem={({ item: image }) => (
+          <Image source={{ uri: image }} style={styles.mainImage} />
+        )}
         showsHorizontalScrollIndicator={false}
       />
 
       <View style={styles.iconsContainer}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <TouchableOpacity onPress={() => handleLike(index, item.id, likedPosts, setLikedPosts, likeCounts, setLikeCounts)}>
-            <AntDesign name={likedPosts[index] ? "heart" : "hearto"} size={20} color={likedPosts[index] ? "beige" : "white"} style={{ marginRight: 10 }} />
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity
+            onPress={() =>
+              handleLike(
+                index,
+                item.id,
+                likedPosts,
+                setLikedPosts,
+                likeCounts,
+                setLikeCounts
+              )
+            }
+          >
+            <AntDesign
+              name={likedPosts[index] ? 'heart' : 'hearto'}
+              size={20}
+              color={likedPosts[index] ? 'beige' : 'white'}
+              style={{ marginRight: 10 }}
+            />
           </TouchableOpacity>
-          <Text style={{ color: "white", marginRight: 30 }}>{likeCounts[index]}</Text>
+          <Text style={{ color: 'white', marginRight: 30 }}>{likeCounts[index]}</Text>
 
           <TouchableOpacity style={styles.icon} onPress={() => openModal(item.id)}>
             <AntDesign name="message1" size={20} color="white" />
@@ -142,12 +208,12 @@ export default function Home() {
       </View>
 
       <View style={styles.contentContainer}>
-        <Text style={{ fontWeight: "bold", color: "white" }}>{item.userName} </Text>
-        <Text style={{ color: "white" }}>{item.content}</Text>
+        <Text style={{ fontWeight: 'bold', color: 'white' }}>{item.userName} </Text>
+        <Text style={{ color: 'white' }}>{item.content}</Text>
       </View>
 
       <Modal
-        visible={isModalVisible && selectedPostId === item.id}  // Vérifier si le post est sélectionné
+        visible={isModalVisible && selectedPostId === item.id}
         animationType="none"
         transparent={true}
         onRequestClose={closeModal}
@@ -157,30 +223,43 @@ export default function Home() {
           style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
         />
         <View style={[{ backgroundColor: 'black', height: 550 }]}>
-          <View style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: 10, paddingTop: 10, borderBottomColor: "grey", borderWidth: 0.2, width: "100%" }}>
-            <Text style={{ color: "white" }} >Comments</Text>
+          <View
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: 10,
+              paddingTop: 10,
+              borderBottomColor: 'grey',
+              borderWidth: 0.2,
+              width: '100%',
+            }}
+          >
+            <Text style={{ color: 'white' }}>Comments</Text>
           </View>
 
           <FlatList
             data={comments[item.id] || []}
-            keyExtractor={(comment, index) => index.toString()}
+            keyExtractor={(comment) => comment.id.toString()}
             renderItem={({ item: comment }) => {
-              const userDetail = userDetails[comment.userId]; // Basé sur `userId`
+              const userDetail = userDetails[comment.userId];
               return (
                 <View style={styles.commentContainer}>
                   <Text style={styles.commentText}>
-                    <Text style={{ fontWeight: 'bold' }}>
+                    <Text>
                       {userDetail
                         ? `${userDetail.firstName} ${userDetail.lastName}`
-                        : 'Utilisateur inconnu'}:
+                        : 'Utilisateur inconnu'}
                     </Text>{' '}
-                    {comment.content}
+                    
+                    <Text  style={{ fontWeight: 'bold' }}>
+                      {comment.content}
+                    </Text>
                   </Text>
                 </View>
               );
             }}
           />
-
 
           <View style={styles.commentInputContainer}>
             <TextInput
@@ -191,7 +270,7 @@ export default function Home() {
               onChangeText={setNewComment}
             />
             <TouchableOpacity
-              onPress={() => handleAddComment(newComment)}  // Utiliser `newComment` sans passer d'ID
+              onPress={() => handleAddComment(newComment)}
               style={styles.commentIcon}
             >
               <MaterialIcons name="send" size={24} color="white" />
@@ -203,11 +282,11 @@ export default function Home() {
   );
 
   if (loading) {
-    return <ActivityIndicator size="large" color="black" style={{ margin: "auto" }} />;
+    return <ActivityIndicator size="large" color="black" style={{ margin: 'auto' }} />;
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#1f1f1f" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#1f1f1f' }}>
       <FlatList
         data={posts}
         renderItem={renderItem}

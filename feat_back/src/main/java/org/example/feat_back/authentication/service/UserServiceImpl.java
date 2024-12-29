@@ -57,10 +57,14 @@ public class UserServiceImpl implements UserService {
     public List<UserDTO> getUsersByIds(List<Long> userIds) {
         List<UserEntity> userEntities = userRepository.findAllById(userIds);
         return userEntities.stream()
-                .map(userEntity -> new UserDTO(userEntity))
+                .map(UserDTO::new)
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public UserDTO getUserName(String email){
+        return userRepository.findUserNameByEmail(email);
+    }
 
     @Override
     public void updateProfileImage(String email, String imagePath) {

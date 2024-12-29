@@ -12,4 +12,5 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     @Modifying
     @Query("UPDATE UserEntity u SET u.imageUrl = :imagePath WHERE u.email = :email")
     void imageUrl(@Param("email") String email, @Param("imagePath") String imagePath);
+    UserDTO findUserNameByEmail(String email);
 }
